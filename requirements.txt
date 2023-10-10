@@ -6,5 +6,4 @@ certifi==2021.10.8
 Flask
 Flask-SQLAlchemy 
 Flask-Bcrypt
-werkzeug.security 
 python-dotenv
