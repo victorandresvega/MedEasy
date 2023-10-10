@@ -1,8 +1,8 @@
-dnspython==2.2.1
-Flask-PyMongo==2.3.0
-MarkupSafe==2.1.1
-gunicorn==20.1.0
-certifi==2021.10.8
+dnspython
+Flask-PyMongo
+MarkupSafe
+gunicorn
+certifi
 Flask
 Flask-SQLAlchemy 
 Flask-Bcrypt
