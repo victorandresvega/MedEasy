@@ -1,0 +1,179 @@
+/* Clear the 'X' from search inputs */
+input[type=search]::-ms-clear,
+input[type=search]::-ms-reveal,
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+    display: none;
+}
+
+/* Basic Global Styles */
+html,
+body {
+    height: 100%;
+    overflow-x: hidden;
+    /* Prevent horizontal scroll */
+    transition: all 0.3s ease;
+    background-color: #f4f6f8;
+    /* Slightly different shade for the body */
+    font-family: 'Roboto', sans-serif;
+}
+
+.header-logo {
+    height: 40px;
+    transition: all 0.3s ease;
+}
+
+.navbar-elements {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 10px;
+}
+
+.nav-element {
+    text-decoration: none;
+    margin-right: 15px;
+    padding: 8px 15px;
+    transition: all 0.3s ease;
+}
+
+.nav-element:last-child {
+    margin-right: 0;
+}
+
+.nav-element:hover {
+    background-color: #e2e8f0;
+    /* Light gray background on hover */
+    border-radius: 5px;
+}
+
+.nav-element-profile {
+    position: relative;
+    cursor: pointer;
+}
+
+.profile-dropdown {
+    display: none;
+    position: absolute;
+    top: 40px;
+    right: 0;
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    z-index: 1;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.profile-dropdown a {
+    display: block;
+    padding: 8px 15px;
+    text-decoration: none;
+    color: black;
+    transition: background 0.3s ease;
+}
+
+.profile-dropdown a:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.doctor-profile,
+.patient-profile {
+    background-color: white;
+    padding: 25px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.doctor-image {
+    width: 150px;
+    height: 150px;
+}
+
+/* Navbar Styles */
+nav {
+    transition: all 0.3s ease;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+nav a:hover {
+    transition: all 0.3s ease;
+    border-bottom: 2px solid blue;
+    padding-bottom: 3px;
+}
+
+.container {
+    max-width: 1200px;
+}
+
+/* About Content */
+.container>h1,
+.container>h2 {
+    color: #333;
+}
+
+.container>p {
+    font-size: 18px;
+    line-height: 1.7;
+}
+
+.container ul {
+    margin-left: 1.25rem;
+    list-style-type: circle;
+}
+
+/* Search Form */
+form {
+    transition: all 0.3s ease;
+}
+
+form button:hover {
+    transform: translateY(-3px);
+}
+
+/* Doctor Listings */
+.block.border {
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.block.border:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Google Map */
+#map {
+    transition: all 0.3s ease;
+}
+
+/* Footer Styles */
+footer {
+    padding: 20px 0;
+    text-align: center;
+    color: #666;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Interactions */
+.nav-element-profile:hover .profile-dropdown {
+    display: block;
+}
+
+/* Enhance responsiveness on smaller devices */
+@media (max-width: 768px) {
+    nav {
+        flex-direction: column;
+    }
+
+    form,
+    .w-2/3 {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .container {
+        padding: 0 15px;
+    }
+}
