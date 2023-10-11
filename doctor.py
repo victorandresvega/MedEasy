@@ -52,20 +52,19 @@ class Doctor:
     @staticmethod
     def get_filtered_doctors(database, specialty, name):
         collection = database.users
-        if not specialty and not name:
+        if specialty == "" and name == "":
             return collection.find()
-        elif not specialty:
+        elif specialty == "":
             return collection.aggregate([{'$search': {'index': 'name', 'text': {'query': name, 'path': {'wildcard': '*'}}}}])
-        elif not name:
+        elif name == "":
             return collection.find({'specialties': specialty})
-        name_filter = collection.aggregate(
-            [{'$search': {'index': 'name', 'text': {'query': name, 'path': {'wildcard': '*'}}}}])
+        name_filter = collection.aggregate([{'$search': {'index': 'name', 'text': {'query': name, 'path': {'wildcard': '*'}}}}])
         result = []
         for doctor in name_filter:
-            add = True
-            for spty in doctor['specialties']:
-                if spty != specialty:
-                    add = False
+            add = False
+            for spty in doctor.payload(['specialties']):
+                if spty == specialty:
+                    add = True
             if add:
                 result.append(doctor)
         return result
