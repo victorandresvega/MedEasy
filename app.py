@@ -81,7 +81,7 @@ def profile():
                 }
             })
 
-        return render_template('doctor.html', doctor=user.payload)
+        return render_template('doctor.html', doctor_email=user, doctor=user.payload)
 
     elif user.role == "patient":
         if request.method == 'POST':
