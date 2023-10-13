@@ -4,9 +4,10 @@ import re
 
 
 class Doctor:
-
-    curr_specialties = {'cardiologist', 'dermatologist',
-                        'allergist', 'generalist', 'pediatrician', 'orthopedist', 'ophtalmologist', 'radiologist'}
+    # TODO Consider moving to new class (class Constants or class Data)
+    medicalSpecialties = sorted({'Cardiólogo', 'Dermatólogo', 'Alergista', 'Generalista', 'Pediatra', 'Ortopeda', 'Oftalmólogo', 'Radiólogo'})
+    
+    medicalCoverages = sorted({'Triple-S Salud', 'Molina Healthcare of Puerto Rico', 'MMM (Medicare y Mucho Más)', 'PMC Medicare Choice','Humana'})
 
     def __init__(self, first_name, last_name, specialties, address, lat, lng, medical_coverages, phone_number):
         self.first_name = self.valid_first_name(first_name)
@@ -15,10 +16,8 @@ class Doctor:
         self.address = self.valid_address(address)
         self.lat = self.valid_lat(lat)
         self.lng = self.valid_lng(lng)
-        self.medical_coverages = self.valid_medical_coverages(
-            medical_coverages)
+        self.medical_coverages = self.valid_medical_coverages(medical_coverages)
         self.phone_number = self.valid_phone_number(phone_number)
-        self.doc_id = self.generate_doctor_id()
         self.role = 'doctor'
 
     def to_json(self):
@@ -35,11 +34,10 @@ class Doctor:
             'role': self.role
         }
 
-# TODO REMOVE 
+# TODO REVIEW
     @staticmethod
     def create_doctor(first_name, last_name, specialties, address, lat, lng, medical_coverages, phone_number, database):
-        doctor = Doctor(first_name, last_name, specialties, address,
-                        lat, lng, medical_coverages, phone_number)
+        doctor = Doctor(first_name, last_name, specialties, address, lat, lng, medical_coverages, phone_number)
         doctor_document = doctor.to_json()
         collection = database.doctors
         collection.insert_one(doctor_document)
@@ -82,16 +80,6 @@ class Doctor:
             raise ValueError("Invalid doctor last name format")
         return last_name
 
-    def valid_specialties(self, specialties):
-        if type(specialties) != list:
-            raise TypeError("The doctor's specialties is not of type list")
-        for specialty in specialties:
-            if type(specialty) != str:
-                raise TypeError("The doctor's specialty is not of type string")
-            if specialty not in Doctor.curr_specialties:
-                raise ValueError(f"{specialty} is not a valid specialty.")
-        return specialties
-
     def valid_address(self, address):
         if type(address) != str:
             raise TypeError("The doctor's address is not of type str")
@@ -110,16 +98,6 @@ class Doctor:
         if lng <= -181.0 or lng >= 181.0:
             raise ValueError("The Doctor's office latitude cordinate is not in range of [-180 to 180].")
         return lng
-    
-    def valid_medical_coverages(self, medical_coverages):
-        if type(medical_coverages) != list:
-            raise TypeError("Medical coverages should be of type list")
-        
-        for coverage in medical_coverages:
-            if type(coverage) != str:
-                raise TypeError("Medical coverage should be of type str")
-    
-        return medical_coverages
 
     def valid_phone_number(self, phone_number):
         pattern = re.compile(
@@ -127,18 +105,11 @@ class Doctor:
         if not pattern.match(phone_number):
             raise ValueError("Invalid doctor phone number format")
         return phone_number
-
-    # TODO REMOVE
-    def generate_doctor_id(self):
-        cur_time = str(time.time())
-        hashed_time = hashlib.sha1()
-        hashed_time.update(cur_time.encode("utf8"))
-        return hashed_time.hexdigest()
     
-    # TODO Check use
+    # TODO REVIEW
     @staticmethod
     def get_doctor_by_id(doc_id, mongo):
-        user = mongo.db.users.find_one({"user_id": doc_id, "role": "doctor"})
+        user = mongo.db.users.find_one({"user_id": "_id", "role": "doctor"})
         if user:
             doctor_data = user["payload"]
             return Doctor(
@@ -146,8 +117,8 @@ class Doctor:
                 doctor_data['last_name'],
                 doctor_data['specialties'],
                 doctor_data['address'],
-                doctor_data.get('lat', 0.0),
-                doctor_data.get('lng', 0.0),
+                doctor_data.get('lat'),
+                doctor_data.get('lng'),
                 doctor_data['medical_coverages'],
                 doctor_data['phone_number'],
                 doctor_data.get('photo_url', '/AppointMED/static/images/generic-user-pfp.png')

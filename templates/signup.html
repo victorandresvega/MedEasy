@@ -1,293 +1,462 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- Tailwind CSS CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&family=Whisper&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="stylesheet" href="../static/css/style.css">
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&family=Whisper&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../static/css/style.css" />
     <title>MedEasy - Sign Up</title>
-</head>
+  </head>
 
-<body class="bg-gray-100 h-screen">
+  <body class="bg-gray-100 h-screen">
     <div class="container mx-auto px-4 h-full">
-        <!-- Navbar -->
-        <div class="navbar mb-10">
-            <a href="/">
-                <img class="mx-auto my-8 w-32" src="../static/images/MedEasy.svg" alt="MedEasy logo">
-            </a>
-        </div>
-        <div class="flex justify-center">
-            <div class="bg-white w-full max-w-md rounded-lg shadow-md p-8">
-                <div id="signup-form">
-                    <h2 class="font-semibold text-xl mb-6 text-center">Sign Up</h2>
-                    <div class="mb-6">
-                        <span class="font-medium block mb-2">Account Type:</span>
-                        <button type="button" id="patient-btn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mr-4" data-account-type="patient">Patient</button>
-                        <button type="button" id="doctor-btn" class="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400" data-account-type="doctor">Doctor</button>
-                    </div>
+      <!-- Navbar -->
+      <div class="navbar mb-10">
+        <a href="/">
+          <img
+            class="mx-auto my-8 w-32"
+            src="../static/images/MedEasy.svg"
+            alt="MedEasy logo"
+          />
+        </a>
+      </div>
+      <div class="flex justify-center">
+        <div class="bg-white w-full max-w-md rounded-lg shadow-md p-8">
+          <div id="signup-form">
+            <h2 class="font-semibold text-xl mb-6 text-center">Inscribirse</h2>
+            <div class="mb-6">
+              <span class="font-medium block mb-2">Tipo de Cuenta:</span>
+              <button
+                type="button"
+                id="patient-btn"
+                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mr-4"
+                data-account-type="patient"
+              >
+                Paciente
+              </button>
+              <button
+                type="button"
+                id="doctor-btn"
+                class="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400"
+                data-account-type="doctor"
+              >
+                Doctor
+              </button>
+            </div>
 
-                    <!-- Patient Sign Up Form -->
-                    <div id="patient-fields" style="display:none;">
-                        <form method="post" action="/signup" class="space-y-6" enctype="multipart/form-data">
+            <!-- Patient Sign Up Form -->
+            <div id="patient-fields" style="display: none">
+              <form
+                method="post"
+                action="/signup"
+                class="space-y-6"
+                enctype="multipart/form-data"
+              >
+                <!-- Hidden Input for Patient Account Type -->
+                <input type="hidden" name="accountType" value="patient" />
 
-                                <!-- Hidden Input for Patient Account Type -->
-                                <input type="hidden" name="accountType" value="patient">
+                <!-- ... Patient-specific fields ... -->
+                <div class="mb-4">
+                  <label for="patient_first_name">Nombre:</label>
+                  <input
+                    type="text"
+                    id="patient_first_name"
+                    name="patient_first_name"
+                    required
+                    class="w-full p-2 border rounded-md"
+                  />
+                </div>
 
-                                <!-- ... Patient-specific fields ... -->
-                                <div class="mb-4">
-                                    <label for="patient_first_name">First Name:</label>
-                                    <input type="text" id="patient_first_name" name="patient_first_name" required class="w-full p-2 border rounded-md">
-                                </div>
+                <div class="mb-4">
+                  <label for="patient_last_name">Apellido:</label>
+                  <input
+                    type="text"
+                    id="patient_last_name"
+                    name="patient_last_name"
+                    required
+                    class="w-full p-2 border rounded-md"
+                  />
+                </div>
 
-                                <div class="mb-4">
-                                    <label for="patient_last_name">Last Name:</label>
-                                    <input type="text" id="patient_last_name" name="patient_last_name" required class="w-full p-2 border rounded-md">
-                                </div>
+                <div class="mb-4">
+                  <label for="patient_phone_number">Telefono:</label>
+                  <input
+                    type="tel"
+                    id="patient_phone_number"
+                    name="patient_phone_number"
+                    required
+                    class="w-full p-2 border rounded-md"
+                  />
+                </div>
 
-                                <div class="mb-4">
-                                    <label for="patient_phone_number">Phone Number:</label>
-                                    <input type="tel" id="patient_phone_number" name="patient_phone_number" required class="w-full p-2 border rounded-md">
-                                </div>
-                               
-                                <div>
-                                    <label for="signup-email" class="block mb-2 font-medium">Email:</label>
-                                    <input type="email" id="signup-email" name="email" required class="w-full p-2 border rounded">
-                                </div>
+                <div>
+                  <label for="signup-email" class="block mb-2 font-medium"
+                    >Correo Electronico:</label
+                  >
+                  <input
+                    type="email"
+                    id="signup-email"
+                    name="email"
+                    required
+                    class="w-full p-2 border rounded"
+                  />
+                </div>
 
-                                <div class="relative">
-                                    <label for="patient-signup-password" class="block mb-2 font-medium">Password:</label>
-                                    <input type="password" id="patient-signup-password" name="password" required class="w-full p-2 border rounded">
-                                    <span toggle="#patient-signup-password" class="material-icons toggle-password absolute top-1/2 right-3 cursor-pointer">visibility_off</span>
-                                </div>
+                <div class="relative">
+                  <label
+                    for="patient-signup-password"
+                    class="block mb-2 font-medium"
+                    >Contraseña:</label
+                  >
+                  <input
+                    type="password"
+                    id="patient-signup-password"
+                    name="password"
+                    required
+                    class="w-full p-2 border rounded"
+                  />
+                  <span
+                    toggle="#patient-signup-password"
+                    class="material-icons toggle-password absolute top-1/2 right-3 cursor-pointer"
+                    >visibility_off</span
+                  >
+                </div>
 
+                <!-- Create Account button for Patient -->
+                <div>
+                  <input
+                    class="cursor-pointer w-full bg-blue-500 text-white p-2 rounded"
+                    type="submit"
+                    value="Crear Cuenta"
+                  />
+                </div>
 
-                                    <!-- Create Account button for Patient -->
-                                <div>
-                                    <input class="cursor-pointer w-full bg-blue-500 text-white p-2 rounded" type="submit" value="Create Account">
-                                </div>
+                <div class="text-center mt-4">
+                  <span>Tiene cuenta? </span>
+                  <a href="/signin" class="text-blue-500 hover:underline"
+                    >Sign In</a
+                  >
+                </div>
+              </form>
+            </div>
 
-                                <div class="text-center mt-4">
-                                    <span>Already have an account? </span>
-                                    <a href="/signin" class="text-blue-500 hover:underline">Sign In</a>
-                                </div>
-                        </form>
-                    </div>
+            <!-- Doctor Sign Up Form -->
+            <div id="doctor-fields" style="display: none">
+              <form
+                method="post"
+                action="/signup"
+                class="space-y-6"
+                enctype="multipart/form-data"
+              >
+                <!-- Hidden Input for Patient Account Type -->
+                <input type="hidden" name="accountType" value="doctor" />
+                <!-- ... Doctor-specific fields ... -->
+                <div class="mb-4">
+                  <label for="first_name">Nombre:</label>
+                  <input
+                    type="text"
+                    id="first_name"
+                    name="first_name"
+                    required
+                    class="w-full p-2 border rounded-md"
+                  />
+                </div>
 
-                    <!-- Doctor Sign Up Form -->
-                    <div id="doctor-fields" style="display:none;">
-                        <form method="post" action="/signup" class="space-y-6" enctype="multipart/form-data">
-                                <!-- Hidden Input for Patient Account Type -->
-                                <input type="hidden" name="accountType" value="doctor">
-                                <!-- ... Doctor-specific fields ... -->
-                                <div class="mb-4">
-                                    <label for="first_name">First Name:</label>
-                                    <input type="text" id="first_name" name="first_name" required class="w-full p-2 border rounded-md">
-                                </div>
+                <div class="mb-4">
+                  <label for="last_name">Apellido:</label>
+                  <input
+                    type="text"
+                    id="last_name"
+                    name="last_name"
+                    required
+                    class="w-full p-2 border rounded-md"
+                  />
+                </div>
+                <!-- Specialties Dropdown -->
+                <div class="dropdown mb-4 relative">
+                  <label for="specialties" class="block mb-2 font-medium"
+                    >Especialidad:</label
+                  >
+                  <button
+                    class="w-full bg-gray-200 text-left px-4 py-2 rounded border focus:outline-none focus:ring"
+                    id="dropdownButtonSpecialties"
+                  >
+                    Seleccionar Especialidad
+                    <span
+                      class="material-icons absolute right-3 top transform -translate-y"
+                      >keyboard_arrow_down</span
+                    >
+                  </button>
+                  <div
+                    class="dropdown-menu-specialties absolute w-full mt-2 hidden border rounded bg-white shadow-md z-10"
+                  >
+                    <!-- Specialty checkbox options -->
+                    {% for specialty in specialties %}
+                    <label
+                      class="block px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        name="specialties[]"
+                        value="{{ specialty }}"
+                        class="mr-2"
+                      />
+                      {{ specialty }}
+                    </label>
+                    {% endfor %}
+                  </div>
+                </div>
 
-                                <div class="mb-4">
-                                    <label for="last_name">Last Name:</label>
-                                    <input type="text" id="last_name" name="last_name" required class="w-full p-2 border rounded-md">
-                                </div>
-                                <!-- Specialties Dropdown -->
-                                <div class="dropdown mb-4 relative">
-                                    <label for="specialties" class="block mb-2 font-medium">Specialties:</label>
-                                    <button class="w-full bg-gray-200 text-left px-4 py-2 rounded border focus:outline-none focus:ring" id="dropdownButtonSpecialties">
-                                        Select Specialties
-                                        <span class="material-icons absolute right-3 top transform -translate-y">keyboard_arrow_down</span>
-                                    </button>
-                                    <div class="dropdown-menu-specialties absolute w-full mt-2 hidden border rounded bg-white shadow-md z-10">
-                                        <!-- ... Specialty checkbox options ... -->
-                                        <label class="block px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                                            <input type="checkbox" name="specialties[]" value="Cardiologist" class="mr-2"> Cardiologist
-                                        </label>
-                                        <label class="block px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                                            <input type="checkbox" name="specialties[]" value="Dermatologist" class="mr-2"> Dermatologist
-                                        </label>
-                                        <label class="block px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                                            <input type="checkbox" name="specialties[]" value="Allergist" class="mr-2"> Allergist
-                                        </label>
-                                        <label class="block px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                                            <input type="checkbox" name="specialties[]" value="Generalist" class="mr-2"> Generalist
-                                        </label>
-                                        <label class="block px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                                            <input type="checkbox" name="specialties[]" value="Pediatrician" class="mr-2"> Pediatrician
-                                        </label>
-                                        <label class="block px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                                            <input type="checkbox" name="specialties[]" value="Orthopedist" class="mr-2"> Orthopedist
-                                        </label>
-                                        <label class="block px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                                            <input type="checkbox" name="specialties[]" value="Ophtalmologist" class="mr-2"> Ophtalmologist
-                                        </label>
-                                        <label class="block px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                                            <input type="checkbox" name="specialties[]" value="Radiologist" class="mr-2"> Radiologist
-                                        </label>
-                                            <!-- ... other options ... -->
-                                    </div>
-                                </div>
-                                        
-                                <div class="mb-4">
-                                    <label for="address">Address:</label>
-                                    <input type="text" id="address" name="address" required class="w-full p-2 border rounded-md">
-                                </div>
+                <div class="mb-4">
+                  <label for="address">Localizacion:</label>
+                  <input
+                    type="text"
+                    id="address"
+                    name="address"
+                    required
+                    class="w-full p-2 border rounded-md"
+                  />
+                </div>
 
-
-                                <div class="dropdown mb-4 relative">
-                                    <label for="medical_coverages" class="block mb-2 font-medium">Medical Coverages:</label>
-                                    <button class="w-full bg-gray-200 text-left px-4 py-2 rounded border focus:outline-none focus:ring" id="dropdownButtonCoverages">
-                                        Select Coverages
-                                        <span class="material-icons absolute right-3 top transform -translate-y">keyboard_arrow_down</span>
-                                    </button>
-                                    <div class="dropdown-menu-coverages absolute w-full mt-2 hidden border rounded bg-white shadow-md z-10">
-                                        <!-- ... Coverage checkbox options ... -->
-                                        <label class="block px-4 py-2 hover:bg-gray-100 cursor-pointer"><input type="checkbox" name="medical_coverages[]" value="Triple S" class="mr-2"> Triple S</label>
-                                        <label class="block px-4 py-2 hover:bg-gray-100 cursor-pointer"><input type="checkbox" name="medical_coverages[]" value="First Medical" class="mr-2"> First Medical</label>
-                                        <label class="block px-4 py-2 hover:bg-gray-100 cursor-pointer"><input type="checkbox" name="medical_coverages[]" value="Humana" class="mr-2"> Humana</label>
-                                        <label class="block px-4 py-2 hover:bg-gray-100 cursor-pointer"><input type="checkbox" name="medical_coverages[]" value="MCS" class="mr-2"> MCS</label>
-                                        <!-- ... other options ... -->
-                                    </div>
-                                </div>
-                    
-                                <div class="mb-4">
-                                    <label for="phone_number">Phone Number:</label>
-                                    <input type="tel" id="phone_number" name="phone_number" required class="w-full p-2 border rounded-md">
-                                </div>
-
-                                <div>
-                                    <label for="signup-email" class="block mb-2 font-medium">Email:</label>
-                                    <input type="email" id="signup-email" name="email" required class="w-full p-2 border rounded">
-                                </div>
-
-                                <div class="relative">
-                                    <label for="doctor-signup-password" class="block mb-2 font-medium">Password:</label>
-                                    <input type="password" id="doctor-signup-password" name="password" required class="w-full p-2 border rounded">
-                                    <span toggle="#doctor-signup-password" class="material-icons toggle-password absolute top-1/2 right-3 cursor-pointer">visibility_off</span>
-                                </div>
-
-                                <!-- Create Account button for Doctor -->
-                                <div>
-                                    <input class="cursor-pointer w-full bg-blue-500 text-white p-2 rounded" type="submit" value="Create Account">
-                                </div>
-
-                                <div class="text-center mt-4">
-                                    <span>Already have an account? </span>
-                                    <a href="/signin" class="text-blue-500 hover:underline">Sign In</a>
-                                </div>
-                        </form>
+                <!-- Medical Coverages Dropdown -->
+                <div class="dropdown mb-4 relative">
+                    <label for="medical_coverages" class="block mb-2 font-medium">Planes Medicos:</label>
+                    <button class="w-full bg-gray-200 text-left px-4 py-2 rounded border focus:outline-none focus:ring" id="dropdownButtonMedicalCoverages">
+                        Seleccionar Planes Medicos
+                        <span class="material-icons absolute right-3 top transform -translate-y">keyboard_arrow_down</span>
+                    </button>
+                    <div class="dropdown-menu-medicalcoverages absolute w-full mt-2 hidden border rounded bg-white shadow-md z-10">
+                        <!-- Medical Coverages checkbox options -->
+                        {% for coverage in medical_coverages %}
+                        <label class="block px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                            <input type="checkbox" name="medical_coverages[]" value="{{ coverage }}" class="mr-2" />
+                            {{ coverage }}
+                        </label>
+                        {% endfor %}
                     </div>
                 </div>
+
+                <div class="mb-4">
+                  <label for="phone_number">Telefono:</label>
+                  <input
+                    type="tel"
+                    id="phone_number"
+                    name="phone_number"
+                    required
+                    class="w-full p-2 border rounded-md"
+                  />
+                </div>
+
+                <div>
+                  <label for="signup-email" class="block mb-2 font-medium"
+                    >Correo Electronico:</label
+                  >
+                  <input
+                    type="email"
+                    id="signup-email"
+                    name="email"
+                    required
+                    class="w-full p-2 border rounded"
+                  />
+                </div>
+
+                <div class="relative">
+                  <label
+                    for="doctor-signup-password"
+                    class="block mb-2 font-medium"
+                    >Contraseña:</label
+                  >
+                  <input
+                    type="password"
+                    id="doctor-signup-password"
+                    name="password"
+                    required
+                    class="w-full p-2 border rounded"
+                  />
+                  <span
+                    toggle="#doctor-signup-password"
+                    class="material-icons toggle-password absolute top-1/2 right-3 cursor-pointer"
+                    >visibility_off</span
+                  >
+                </div>
+
+                <!-- Create Account button for Doctor -->
+                <div>
+                  <input
+                    class="cursor-pointer w-full bg-blue-500 text-white p-2 rounded"
+                    type="submit"
+                    value="Crear Cuenta"
+                  />
+                </div>
+
+                <div class="text-center mt-4">
+                  <span>Tiene cuenta? </span>
+                  <a href="/signin" class="text-blue-500 hover:underline"
+                    >Iniciar Sesion</a
+                  >
+                </div>
+              </form>
             </div>
+          </div>
         </div>
+      </div>
     </div>
     <script>
-document.addEventListener("DOMContentLoaded", function() {
-    const referrer = document.referrer;
-    if (referrer && referrer.includes('/signin')) {
-        document.getElementById('patient-btn').click();
-    }
-});
+      document.addEventListener("DOMContentLoaded", function () {
+        const referrer = document.referrer;
+        if (referrer && referrer.includes("/signin")) {
+          document.getElementById("patient-btn").click();
+        }
+      });
 
-// Account type switching using buttons
-document.getElementById('patient-btn').addEventListener('click', function() {
-    setActiveButton(this, 'patient');
-});
-
-document.getElementById('doctor-btn').addEventListener('click', function() {
-    setActiveButton(this, 'doctor');
-});
-
-function setActiveButton(btn, type) {
-    // First reset both button styles
-    document.getElementById('patient-btn').classList.add('bg-gray-300', 'text-black', 'hover:bg-gray-400');
-    document.getElementById('patient-btn').classList.remove('bg-blue-500', 'text-white', 'hover:bg-blue-600');
-
-    document.getElementById('doctor-btn').classList.add('bg-gray-300', 'text-black', 'hover:bg-gray-400');
-    document.getElementById('doctor-btn').classList.remove('bg-blue-500', 'text-white', 'hover:bg-blue-600');
-
-    // Set active button
-    btn.classList.add('bg-blue-500', 'text-white', 'hover:bg-blue-600');
-    btn.classList.remove('bg-gray-300', 'text-black', 'hover:bg-gray-400');
-
-    if (type === 'patient') {
-        document.getElementById('patient-fields').style.display = 'block';
-        document.getElementById('doctor-fields').style.display = 'none';
-
-        // Set required attributes for patient fields and remove for doctor fields
-        ["patient_first_name", "patient_last_name", "patient_phone_number"].forEach(el => document.getElementById(el).setAttribute('required', true));
-        ["first_name", "last_name", "address", "phone_number"].forEach(el => document.getElementById(el).removeAttribute('required'));
-    } else {
-        document.getElementById('doctor-fields').style.display = 'block';
-        document.getElementById('patient-fields').style.display = 'none';
-
-        // Set required attributes for doctor fields and remove for patient fields
-        ["first_name", "last_name", "address", "phone_number"].forEach(el => document.getElementById(el).setAttribute('required', true));
-        ["patient_first_name", "patient_last_name", "patient_phone_number"].forEach(el => document.getElementById(el).removeAttribute('required'));
-    }
-}
-
-    // Toggle visibility of password
-    document.querySelectorAll('.toggle-password').forEach(function(toggle) {
-        toggle.addEventListener('click', function(e) {
-            const icon = e.currentTarget;
-            const input = document.querySelector(icon.getAttribute('toggle'));
-
-            if (input.type === "password") {
-                input.type = "text";
-                icon.textContent = 'visibility';
-            } else {
-                input.type = "password";
-                icon.textContent = 'visibility_off';
-            }
+      // Account type switching using buttons
+      document
+        .getElementById("patient-btn")
+        .addEventListener("click", function () {
+          setActiveButton(this, "patient");
         });
-    });
 
-    // Dropdown logic for specialties and medical coverages
-    ["Specialties", "Coverages"].forEach((type) => {
-        document.getElementById(`dropdownButton${type}`).addEventListener('click', function() {
-            const menu = document.querySelector(`.dropdown-menu-${type.toLowerCase()}`);
-            menu.classList.toggle('hidden');
+      document
+        .getElementById("doctor-btn")
+        .addEventListener("click", function () {
+          setActiveButton(this, "doctor");
+        });
+
+      function setActiveButton(btn, type) {
+        // First reset both button styles
+        document
+          .getElementById("patient-btn")
+          .classList.add("bg-gray-300", "text-black", "hover:bg-gray-400");
+        document
+          .getElementById("patient-btn")
+          .classList.remove("bg-blue-500", "text-white", "hover:bg-blue-600");
+
+        document
+          .getElementById("doctor-btn")
+          .classList.add("bg-gray-300", "text-black", "hover:bg-gray-400");
+        document
+          .getElementById("doctor-btn")
+          .classList.remove("bg-blue-500", "text-white", "hover:bg-blue-600");
+
+        // Set active button
+        btn.classList.add("bg-blue-500", "text-white", "hover:bg-blue-600");
+        btn.classList.remove("bg-gray-300", "text-black", "hover:bg-gray-400");
+
+        if (type === "patient") {
+          document.getElementById("patient-fields").style.display = "block";
+          document.getElementById("doctor-fields").style.display = "none";
+
+          // Set required attributes for patient fields and remove for doctor fields
+          [
+            "patient_first_name",
+            "patient_last_name",
+            "patient_phone_number",
+          ].forEach((el) =>
+            document.getElementById(el).setAttribute("required", true)
+          );
+          ["first_name", "last_name", "address", "phone_number"].forEach((el) =>
+            document.getElementById(el).removeAttribute("required")
+          );
+        } else {
+          document.getElementById("doctor-fields").style.display = "block";
+          document.getElementById("patient-fields").style.display = "none";
+
+          // Set required attributes for doctor fields and remove for patient fields
+          ["first_name", "last_name", "address", "phone_number"].forEach((el) =>
+            document.getElementById(el).setAttribute("required", true)
+          );
+          [
+            "patient_first_name",
+            "patient_last_name",
+            "patient_phone_number",
+          ].forEach((el) =>
+            document.getElementById(el).removeAttribute("required")
+          );
+        }
+      }
+
+      // Toggle visibility of password
+      document.querySelectorAll(".toggle-password").forEach(function (toggle) {
+        toggle.addEventListener("click", function (e) {
+          const icon = e.currentTarget;
+          const input = document.querySelector(icon.getAttribute("toggle"));
+
+          if (input.type === "password") {
+            input.type = "text";
+            icon.textContent = "visibility";
+          } else {
+            input.type = "password";
+            icon.textContent = "visibility_off";
+          }
+        });
+      });
+
+      // Dropdown logic for specialties and medical coverages
+      ["Specialties", "MedicalCoverages"].forEach((type) => {
+        document
+          .getElementById(`dropdownButton${type}`)
+          .addEventListener("click", function () {
+            const menu = document.querySelector(
+              `.dropdown-menu-${type.toLowerCase()}`
+            );
+            menu.classList.toggle("hidden");
 
             // Update arrow icon
-            const icon = this.querySelector('.material-icons');
-            if (menu.classList.contains('hidden')) {
-                icon.textContent = 'keyboard_arrow_down';
+            const icon = this.querySelector(".material-icons");
+            if (menu.classList.contains("hidden")) {
+              icon.textContent = "keyboard_arrow_down";
             } else {
-                icon.textContent = 'keyboard_arrow_up';
+              icon.textContent = "keyboard_arrow_up";
             }
-    });
+          });
 
-    const checkboxes = document.querySelectorAll(`.dropdown-menu-${type.toLowerCase()} input[type="checkbox"]`);
-    checkboxes.forEach((checkbox) => {
-        checkbox.addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll(
+          `.dropdown-menu-${type.toLowerCase()} input[type="checkbox"]`
+        );
+        checkboxes.forEach((checkbox) => {
+          checkbox.addEventListener("change", function () {
             const selectedValues = [];
             checkboxes.forEach((cbox) => {
-                if (cbox.checked) {
-                    selectedValues.push(cbox.parentNode.textContent.trim());
-                }
+              if (cbox.checked) {
+                selectedValues.push(cbox.parentNode.textContent.trim());
+              }
             });
-            document.getElementById(`dropdownButton${type}`).textContent = selectedValues.join(', ') || `Select ${type}`;
+            document.getElementById(`dropdownButton${type}`).textContent =
+              selectedValues.join(", ") || `Select ${type}`;
+          });
         });
-    });
-});
+      });
 
-    // Clicking outside of dropdowns should close them
-    document.addEventListener('click', function(event) {
-        ["Specialties", "Coverages"].forEach((type) => {
-            const dropdown = document.querySelector(`.dropdown-menu-${type.toLowerCase()}`);
-            const button = document.getElementById(`dropdownButton${type}`);
-            if (!button.contains(event.target) && !dropdown.contains(event.target)) {
-                dropdown.classList.add('hidden');
-                button.querySelector('.material-icons').textContent = 'keyboard_arrow_down';
-            }
+      // Clicking outside of dropdowns should close them
+      document.addEventListener("click", function (event) {
+        ["Specialties", "MedicalCoverages"].forEach((type) => {
+          const dropdown = document.querySelector(
+            `.dropdown-menu-${type.toLowerCase()}`
+          );
+          const button = document.getElementById(`dropdownButton${type}`);
+          if (
+            !button.contains(event.target) &&
+            !dropdown.contains(event.target)
+          ) {
+            dropdown.classList.add("hidden");
+            button.querySelector(".material-icons").textContent =
+              "keyboard_arrow_down";
+          }
         });
-    });
-
+      });
     </script>
-
-</body>
-
+  </body>
 </html>
