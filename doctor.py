@@ -55,18 +55,16 @@ class Doctor:
         if specialty == "" and name == "":
             return collection.find()
         elif specialty == "":
-            return collection.aggregate([{'$search': {'index': 'name', 'text': {'query': name, 'path': {'wildcard': '*'}}}}])
+            return collection.aggregate([{"$match":{"$or":[{"payload.first_name":name},{"payload.last_name":name}]}}])
         elif name == "":
-            return collection.find({'specialties': specialty})
-        name_filter = collection.aggregate([{'$search': {'index': 'name', 'text': {'query': name, 'path': {'wildcard': '*'}}}}])
+            return collection.find({'payload.specialties': specialty})
+        name_filter = collection.aggregate([{"$match":{"$or":[{"payload.first_name":name},{"payload.last_name":name}]}}])
         result = []
         for doctor in name_filter:
-            add = False
-            for spty in doctor.payload(['specialties']):
-                if spty == specialty:
-                    add = True
-            if add:
-                result.append(doctor)
+            if doctor['role'] == 'doctor':
+                for spty in doctor['payload']['specialties']:
+                    if spty == specialty:
+                        result.append(doctor)
         return result
 
     def valid_first_name(self, first_name):
