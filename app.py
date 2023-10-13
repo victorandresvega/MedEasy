@@ -7,9 +7,11 @@ from appointment import Appointment
 from doctor import Doctor
 from patient import Patient
 from event import Event
+from photo import Photo
 from user import User
 from dotenv import load_dotenv
 from bson import ObjectId
+
 
 load_dotenv()
 
@@ -104,6 +106,19 @@ def signupPOST():
         payload["medical_coverages"] = request.form.getlist('medical_coverages[]')
         payload["phone_number"] = request.form.get('phone_number')
 
+        photo_file = request.files.get('photo')
+        if photo_file and photo_file.filename != '':
+            photo_path = os.path.join("static/img/pfp", photo_file.filename)
+            photo_file.save(photo_path)
+            encoded_photo = Photo.encodeImage(photo_path)
+            os.remove(photo_path)
+        else:
+            encoded_photo = Photo.encodeImage("https://freesvg.org/img/abstract-user-flat-4.png") #Default image
+
+        payload["photo"] = encoded_photo
+
+
+
     # Create the user with the above payload
     created_user = User.create_user(
         bcrypt, email=email, password=password, role=account_type, payload=payload, database=mongo.db)
@@ -139,6 +154,7 @@ def profile():
             phone_number = helper_getVal('phone_number', request.form, user.payload) 
             specialties = helper_getValList('specialties', request.form, user.payload)
             medical_coverages = helper_getValList('medical_coverages', request.form, user.payload)
+            photo = helper_getVal('photo', )
             
             collection = mongo.db.users
             collection.update_one({"_id": user_id}, {
@@ -149,12 +165,21 @@ def profile():
                         "specialties": specialties,
                         "address": address,
                         "phone_number": phone_number,
-                        "medical_coverages": medical_coverages
+                        "medical_coverages": medical_coverages,
+                        "photo": photo
                     }
                 }
             })
+        else:
+            photo = user.payload.get("photo")
+            if photo:
+                photo_data = Photo.decodeImage(photo)
+            else:
+                photo_data = Photo.encodeImage("https://freesvg.org/img/abstract-user-flat-4.png")
 
-        return render_template('doctor.html', doctor_email=user, doctor=user.payload)
+            return render_template('doctor.html', doctor_email=user, doctor=user.payload, photo=photo_data)
+
+
 
     elif user.role == "patient":
         if request.method == 'POST':
@@ -214,6 +239,7 @@ def edit_profile():
             phone_number = helper_getVal('phone_number', request.form, user.payload) 
             specialties = helper_getValList('specialties[]', request.form, user.payload)
             medical_coverages = helper_getValList('medical_coverages[]', request.form, user.payload)
+            photo = helper_getVal('photo', request.form, user.payload)
 
             collection = mongo.db.users
             collection.update_one({"_id": ObjectId(user_id)}, {
@@ -225,10 +251,28 @@ def edit_profile():
                         "specialties": specialties,
                         "address": address,
                         "phone_number": phone_number,
-                        "medical_coverages": medical_coverages
+                        "medical_coverages": medical_coverages,
+                        'photo': photo
                     }
                 }
             })
+
+            
+            photo_file = request.files.get('photo')
+            if photo_file and photo_file.filename != '':
+                photo_path = os.path.join("static/img/pfp", photo_file.filename)
+                photo_file.save(photo_path)
+                encoded_photo = Photo.encodeImage(photo_path)
+                os.remove(photo_path)  # delete temp photo after encoding
+                
+                collection.update_one({"_id": ObjectId(user_id)}, {
+                    "$set": {
+                        "payload.photo": encoded_photo
+                    }
+                })
+
+
+        
             return redirect(url_for('profile'))
 
         return render_template('editDoctor.html', doctor_email=user, doctor=user.payload, specialties=specialties, medical_coverages=medical_coverages)

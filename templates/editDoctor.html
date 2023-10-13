@@ -7,35 +7,68 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.15/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&family=Whisper&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <title>Profile</title>
+    <title>Perfil/Editar</title>
   </head>
 <body class="bg-gray-50 font-roboto">
     <!-- Navbar -->
     <nav class="bg-white shadow-lg p-4">
-        <div class="container mx-auto flex items-center justify-between">
-            <a href="/home">
-                <img class="h-10" src="../static/images/MedEasy.svg" alt="MedEasy logo">
-            </a>
-            <div class="space-x-4">
-                <a class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded hover:bg-gray-200" href="/home">Home</a>
-                <a class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded hover:bg-gray-200" href="/about">About</a>
-                {% if '_id' not in session %}
-                <a class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded hover:bg-gray-200" href="/signin">Sign In/Sign Up</a>
-                {% endif %}
-                {% if '_id' in session %}
-                <!-- Profile Dropdown -->
-                <div class="relative inline-block text-left">
-                    <img class="h-10 w-10 rounded-full cursor-pointer" src="{{ session['image_path'] or '../static/images/generic-user-pfp.png' }}" onclick="toggleDropdown()" alt="Profile">
-                    <div id="profileDropdown" class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 z-10" style="display: none;">
-                        <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
-                        <a href="/signout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign Out</a>
-                    </div>
-                </div>
-                {% endif %}
+      <div class="container mx-auto flex items-center justify-between">
+        <a href="/home">
+          <img
+            class="h-10"
+            src="../static/images/MedEasy.svg"
+            alt="MedEasy logo"
+          />
+        </a>
+        <div class="space-x-4">
+          <a
+            class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded hover:bg-gray-200"
+            href="/home"
+            >Inicio</a
+          >
+          <a
+            class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded hover:bg-gray-200"
+            href="/about"
+            >Mas Informacion</a
+          >
+          {% if '_id' not in session %}
+          <a
+            class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded hover:bg-gray-200"
+            href="/signin"
+            >Iniciar/Incribirse</a
+          >
+          {% endif %} {% if '_id' in session %}
+          <!-- Profile Dropdown -->
+          <div class="relative inline-block text-left">
+            <img
+                class="h-10 w-10 rounded-full cursor-pointer"
+                src="{% if 'user_type' in session and session['user_type'] == 'doctor' and 'photo' in session and session['photo'] %}data:image/jpeg;base64,{{ session['photo'].replace('\n', '') }}{% else %}../static/img/generic-user-pfp.png{% endif %}"
+                onclick="toggleDropdown()"
+                alt="Perfil"
+            />
+            <div
+              id="profileDropdown"
+              class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 z-10"
+              style="display: none"
+            >
+              <a
+                href="/profile"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >Perfil</a
+              >
+              <a
+                href="/signout"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >Cerrar Sesion</a
+              >
             </div>
+          </div>
+          {% endif %}
         </div>
+      </div>
     </nav>
-        <form method="post" action="/profile/edit" class="container mx-auto mt-10 bg-white p-8 rounded-lg shadow-md w-3/4 md:w-1/2">
+        <form method="post" action="/profile/edit" enctype="multipart/form-data" class="container mx-auto mt-5 bg-white p-6 rounded-lg shadow-md w-3/4 md:w-1/2">
+
             <!-- Email -->
             <div class="mb-4">
                 <label for="email" class="block mb-2 font-medium">Correo Electronico:</label>
@@ -57,25 +90,35 @@
             <!-- Specialties -->
             <div class="mb-4">
                 <label for="specialties" class="block mb-2 font-medium">Especialidad:</label>
-                {% for specialty in specialties %}
-                <div class="mb-2">
-                    <input type="checkbox" name="specialties[]" value="{{ specialty }}" class="mr-2" 
-                    {% if specialty in doctor.specialties %} checked {% endif %}>
-                    <label>{{ specialty }}</label>
+                <div class="checkbox-list-container">
+                    {% for specialty in specialties %}
+                    <div class="mb-2">
+                        <input type="checkbox" name="specialties[]" value="{{ specialty }}" class="mr-2" 
+                        {% if specialty in doctor.specialties %} checked {% endif %}>
+                        <label>{{ specialty }}</label>
+                    </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
             </div>
 
             <!-- Medical Plans -->
             <div class="mb-4">
                 <label for="medical_coverages" class="block mb-2 font-medium">Planes Medicos:</label>
-                {% for plan in medical_coverages %}
-                <div class="mb-2">
-                    <input type="checkbox" name="medical_coverages[]" value="{{ plan }}" class="mr-2" 
-                    {% if plan in doctor.medical_coverages %} checked {% endif %}>
-                    <label>{{ plan }}</label>
+                <div class="checkbox-list-container">
+                    {% for plan in medical_coverages %}
+                    <div class="mb-2">
+                        <input type="checkbox" name="medical_coverages[]" value="{{ plan }}" class="mr-2" 
+                        {% if plan in doctor.medical_coverages %} checked {% endif %}>
+                        <label>{{ plan }}</label>
+                    </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
+            </div>
+
+            <!-- Profile Photo -->
+            <div class="mb-4">
+                <label for="photo" class="block mb-2 font-medium">Profile Photo:</label>
+                <input type="file" name="photo" class="w-full p-2 border rounded-md">
             </div>
 
             <input class="w-full bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400" type="submit" value="Aplicar Cambios"/>

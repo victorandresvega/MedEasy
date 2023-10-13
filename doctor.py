@@ -9,28 +9,30 @@ class Doctor:
     
     medicalCoverages = sorted({'Triple-S Salud', 'Molina Healthcare of Puerto Rico', 'MMM (Medicare y Mucho Más)', 'PMC Medicare Choice','Humana'})
 
-    def __init__(self, first_name, last_name, specialties, address, lat, lng, medical_coverages, phone_number):
+    def __init__(self, first_name, last_name, specialties, address, lat, lng, medical_coverages, phone_number, photo):
         self.first_name = self.valid_first_name(first_name)
         self.last_name = self.valid_last_name(last_name)
-        self.specialties = self.valid_specialties(specialties)
         self.address = self.valid_address(address)
+        self.phone_number = self.valid_phone_number(phone_number)
+        self.photo = self.valid_photo(photo)
         self.lat = self.valid_lat(lat)
         self.lng = self.valid_lng(lng)
+        self.specialties = self.valid_specialties(specialties)
         self.medical_coverages = self.valid_medical_coverages(medical_coverages)
-        self.phone_number = self.valid_phone_number(phone_number)
         self.role = 'doctor'
 
     def to_json(self):
         return {
             'first_name': self.first_name,
             'last_name': self.last_name,
-            'specialties': self.specialties,
             'address': self.address,
             'lat': self.lat,
             'lng': self.lng,
+            'specialties': self.specialties,
             'medical_coverages': self.medical_coverages,
             'phone_number': self.phone_number,
             'doc_id': self.doc_id,
+            'photo': self.photo,
             'role': self.role
         }
 
@@ -106,6 +108,17 @@ class Doctor:
             raise ValueError("Invalid doctor phone number format")
         return phone_number
     
+    # TODO Review and Modify for better validation method
+    def valid_photo(self, photo):
+        if type(photo) != str:
+            return '/static/img/generic-user-pfp.png'
+
+        pattern = re.compile(r'https://[a-zA-Z0-9-]+\.[a-zA-Z0-9/.]+[.](jpg|jpeg|png|gif)$')
+            
+        if not pattern.match(photo):
+            return '/static/img/generic-user-pfp.png'
+        return photo
+    
     # TODO REVIEW
     @staticmethod
     def get_doctor_by_id(doc_id, mongo):
@@ -121,7 +134,7 @@ class Doctor:
                 doctor_data.get('lng'),
                 doctor_data['medical_coverages'],
                 doctor_data['phone_number'],
-                doctor_data.get('photo_url', '/AppointMED/static/images/generic-user-pfp.png')
+                doctor_data.get('photo', '/static/img/generic-user-pfp.png')
             )
         return None
     

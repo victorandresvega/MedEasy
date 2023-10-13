@@ -133,6 +133,11 @@ form button:hover {
 }
 
 /* Doctor Listings */
+.doctor-list-container {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
 .block.border {
     transition: all 0.3s ease;
     border: 1px solid rgba(0, 0, 0, 0.1);
@@ -141,6 +146,13 @@ form button:hover {
 .block.border:hover {
     transform: translateY(-3px);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+.checkbox-list-container {
+    max-height: 150px;
+    overflow-y: auto;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 5px;
+    border-radius: 5px;
 }
 
 /* Google Map */
@@ -171,9 +183,10 @@ footer {
     .w-2/3 {
         width: 100%;
         margin-left: 0;
+        padding: 4px;
     }
 
     .container {
-        padding: 0 15px;
+        padding: 0 10px;
     }
 }
