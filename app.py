@@ -38,16 +38,17 @@ doctor_ids = {"Richard Silverstein": "1234"}
 @app.route("/", methods=["GET", "POST"])
 @app.route("/home", methods=["GET", "POST"])
 def home():
+    specialties = Doctor.medicalSpecialties
+    
     if request.method == "GET":
         users = mongo.db.users.find({"role": "doctor"})
+        
     if request.method == "POST":
         specialty = request.form.get("doctor-specialty")
-        print(specialty)
         name = request.form.get("doctor-name")
-        print(name)
         users = Doctor.get_filtered_doctors(mongo.db, specialty, name)
-        print(users)  
-    return render_template('home.html', users=users)
+        
+    return render_template('home.html', users=users, specialties=specialties)
 
 
 

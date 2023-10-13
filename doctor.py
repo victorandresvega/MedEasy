@@ -5,6 +5,8 @@ import re
 
 class Doctor:
 
+    medicalSpecialties = sorted({'Cardiólogo', 'Dermatólogo', 'Alergista', 'Generalista', 'Pediatra', 'Ortopeda', 'Oftalmólogo', 'Radiólogo', 'Gastroenterologo'})
+    
     curr_specialties = {'cardiologist', 'dermatologist',
                         'allergist', 'generalist', 'pediatrician', 'orthopedist', 'ophtalmologist', 'radiologist'}
 
