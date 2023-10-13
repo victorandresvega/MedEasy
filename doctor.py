@@ -55,11 +55,13 @@ class Doctor:
         if specialty == "" and name == "":
             return collection.find()
         elif specialty == "":
+            #This function basically queries both the first_name and last_name fields inside the payload
             return collection.aggregate([{"$match":{"$or":[{"payload.first_name":name},{"payload.last_name":name}]}}])
         elif name == "":
             return collection.find({'payload.specialties': specialty})
         name_filter = collection.aggregate([{"$match":{"$or":[{"payload.first_name":name},{"payload.last_name":name}]}}])
         result = []
+        #Goes through all the matches that were found with the name query, verifies if they are doctors first (otherwise an error occurs when trying to access the specialties)
         for doctor in name_filter:
             if doctor['role'] == 'doctor':
                 for spty in doctor['payload']['specialties']:
