@@ -117,7 +117,7 @@
         >
           Buscar
         </button>
-
+      <div class="doctor-list-container">
         <div class="mt-6">
           {% for user in users %}
           <a href="/Schedule/{{ user['_id'] }}" class="block border p-4 my-2 rounded shadow doctor-link">
@@ -135,6 +135,7 @@
           </a>
           {% endfor %}
       </div>
+    </div>
       </form>
 
       <!-- Google Map -->
