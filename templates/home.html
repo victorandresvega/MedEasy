@@ -122,7 +122,11 @@
           {% for user in users %}
           <a href="/Schedule/{{ user['_id'] }}" class="block border p-4 my-2 rounded shadow doctor-link">
               <div class="flex items-center">
-                  <span class="material-icons text-blue-500 text-4xl mr-4">account_circle</span>
+                  <img
+                    src="{% if user.payload['photo'] %}data:image/jpeg;base64,{{ user.payload['photo'] }}{% else %}../static/img/generic-user-pfp.png{% endif %}"
+                    class="h-14 w-14 rounded-full mr-4"
+                    alt="Imagen de Perfil"
+                    />
                   <div>
                       <h2 class="text-xl font-semibold">
                           Dr. {{ user.payload['first_name'] }} {{ user.payload['last_name'] }}

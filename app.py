@@ -117,7 +117,7 @@ def signupPOST():
 
         photo_file = request.files.get('photo')
         if photo_file and photo_file.filename != '':
-            photo_path = os.path.join("static/img/pfp", photo_file.filename)
+            photo_path = os.path.join("static/img/", photo_file.filename)
             photo_file.save(photo_path)
             encoded_photo = Photo.encodeImage(photo_path)
             os.remove(photo_path)
