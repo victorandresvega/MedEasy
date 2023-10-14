@@ -140,10 +140,28 @@ def signout():
 def profile():
     user_id = session.get('_id', None)
     user = User.get_user_by_id(user_id, mongo.db)
+    user_appointments = list(mongo.db.appointments.find({"patient_id": ObjectId(user_id)}))
+
 
     if not user:  
         flash('User not found.', 'danger')
         return redirect(url_for('home'))
+
+    # Convert the epoch timestamp to date and time for each appointment
+    for appointment in user_appointments:
+        appointment['date'] = Appointment.epoch_to_date(appointment['timestamp'])
+        appointment['time'] = Appointment.epoch_to_time(appointment['timestamp'])
+
+
+        doctor = mongo.db.users.find_one({"_id": appointment['doctor_id']})
+        if doctor:
+            appointment['doctor_name'] = doctor['payload'].get('first_name', '') + " " + doctor['payload'].get('last_name', '')
+            appointment['phone'] = doctor['payload'].get('phone_number', 'N/A')
+            appointment['location'] = doctor['payload'].get('address', 'N/A')
+        else:
+            appointment['doctor_name'] = 'N/A'
+            appointment['phone'] = 'N/A'
+            appointment['location'] = 'N/A'
 
     if user.role == "doctor":
         if request.method == 'POST':
@@ -203,7 +221,8 @@ def profile():
             user = User.get_user_by_id(user_id, mongo.db)
 
 
-        return render_template('patient.html', user=user)
+        return render_template('patient.html', user=user, appointments=user_appointments)
+
 
     else:
         flash('Invalid profile type.', 'danger')
