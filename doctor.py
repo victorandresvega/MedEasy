@@ -5,6 +5,8 @@ import re
 
 class Doctor:
 
+    medicalSpecialties = sorted({'Cardiólogo', 'Dermatólogo', 'Alergista', 'Generalista', 'Pediatra', 'Ortopeda', 'Oftalmólogo', 'Radiólogo', 'Gastroenterologo'})
+    
     curr_specialties = {'cardiologist', 'dermatologist',
                         'allergist', 'generalist', 'pediatrician', 'orthopedist', 'ophtalmologist', 'radiologist'}
 
@@ -52,22 +54,26 @@ class Doctor:
     @staticmethod
     def get_filtered_doctors(database, specialty, name):
         collection = database.users
-        if not specialty and not name:
+        #Regex expression to ignore case in inputted name
+        regex_case_ignore = {"$regex": f".*{re.escape(name)}.*","$options": "i"}
+        #Pipeline to be used in the aggregate functions below. Basically looks to see if the input name matches 
+        #the first or last names of the doctors in the collection
+        pipeline = [{"$match":{"$or":[{"payload.first_name":regex_case_ignore},{"payload.last_name":regex_case_ignore}]}}]
+        if specialty == "" and name == "":
             return collection.find()
-        elif not specialty:
-            return collection.aggregate([{'$search': {'index': 'name', 'text': {'query': name, 'path': {'wildcard': '*'}}}}])
-        elif not name:
-            return collection.find({'specialties': specialty})
-        name_filter = collection.aggregate(
-            [{'$search': {'index': 'name', 'text': {'query': name, 'path': {'wildcard': '*'}}}}])
+        elif specialty == "":
+            #This function basically queries both the first_name and last_name fields inside the payload
+            return collection.aggregate(pipeline)
+        elif name == "":
+            return collection.find({'payload.specialties': specialty})
+        name_filter = collection.aggregate(pipeline)
         result = []
+        #Goes through all the matches that were found with the name query, verifies if they are doctors first (otherwise an error occurs when trying to access the specialties)
         for doctor in name_filter:
-            add = True
-            for spty in doctor['specialties']:
-                if spty != specialty:
-                    add = False
-            if add:
-                result.append(doctor)
+            if doctor['role'] == 'doctor':
+                for spty in doctor['payload']['specialties']:
+                    if spty == specialty:
+                        result.append(doctor)
         return result
 
     def valid_first_name(self, first_name):
