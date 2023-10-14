@@ -7,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.15/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&family=Whisper&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <title>Perfil</title>
+    <title>Perfil/Editar</title>
   </head>
 <body class="bg-gray-50 font-roboto">
     <!-- Navbar -->
@@ -67,66 +67,63 @@
         </div>
       </div>
     </nav>
-<div class="mt-10 flex flex-col items-center space-y-6">
-    <h2 class="text-2xl font-semibold text-center mb-4">{{ user.payload.first_name }} {{ user.payload.last_name }}</h2>
-    <!-- <div class="bg-white p-6 rounded-lg shadow-xl max-w-2xl w-full">
-        <div class="mb-4 text-center">
-            <p class="font-medium">Correo Electronico:</p>
-            <p>{{ user.email }}</p>
-        </div>
-        <div class="mb-6 text-center">
-            <p class="font-medium">Numero de Telefono:</p>
-            <p>{{ user.payload.phone_number }}</p>
-        </div>
-    </div> -->
+        <form method="post" action="/profile/edit" enctype="multipart/form-data" class="container mx-auto mt-5 bg-white p-6 rounded-lg shadow-md w-3/4 md:w-1/2">
 
-    <!-- Appointments table -->
-    <div class="bg-white p-6 rounded-lg shadow-xl max-w-2xl w-full">
-        <h3 class="font-semibold mb-4" text-center>Citas Activas</h3>
-        {% if appointments|length == 0 %}
-          <p>No tiene citas pendientes.</p>
-        {% else %}
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hora</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Localizacion</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Doctor</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Telefono</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                {% for appointment in appointments %}
-                <tr>
-                    <td class="px-6 py-4">{{ appointment.date }}</td>
-                    <td>{{ appointment.time }}</td>
-                    <td>{{ appointment.location }}</td>
-                    <td>{{ appointment.doctor_name }}</td>
-                    <td>{{ appointment.phone }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% endif %}
-    </div>
+            <!-- Email -->
+            <div class="mb-4">
+                <label for="email" class="block mb-2 font-medium">Correo Electronico:</label>
+                <input type="email" name="email" value="{{ doctor_email.email }}" required class="w-full p-2 border rounded-md">
+            </div>
+            
+            <!-- Address -->
+            <div class="mb-4">
+                <label for="address" class="block mb-2 font-medium">Localizacion:</label>
+                <input type="text" name="address" value="{{ doctor.address }}" required class="w-full p-2 border rounded-md">
+            </div>
 
+            <!-- Phone Number -->
+            <div class="mb-4">
+                <label for="phone_number" class="block mb-2 font-medium">Telefono:</label>
+                <input type="tel" name="phone_number" value="{{ doctor.phone_number }}" required class="w-full p-2 border rounded-md">
+            </div>
+            
+            <!-- Specialties -->
+            <div class="mb-4">
+                <label for="specialties" class="block mb-2 font-medium">Especialidad:</label>
+                <div class="checkbox-list-container">
+                    {% for specialty in specialties %}
+                    <div class="mb-2">
+                        <input type="checkbox" name="specialties[]" value="{{ specialty }}" class="mr-2" 
+                        {% if specialty in doctor.specialties %} checked {% endif %}>
+                        <label>{{ specialty }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
 
-    <!-- Notifications & Buttons -->
-    <div class="flex flex-wrap justify-center space-x-6 mt-6 text-center">
-        <div class="bg-white p-6 rounded-lg shadow-xl max-w-xl w-full mb-6">
-            <h3 class="font-semibold mb-4">Notificaciones</h3>
-            <p>Prontamente!</p>
-        </div>
-        <!-- <div class="space-y-4">
-            <a href="/home" class="block w-full text-center bg-emerald-500 text-white rounded px-4 py-2 hover:bg-emerald-600">Encontrar Citas</a>
-            <a href="" class="block w-full text-center bg-gray-300 text-white rounded px-4 py-2">Citas Previas (Coming Soon)</a>
-        </div> -->
-    </div>
+            <!-- Medical Plans -->
+            <div class="mb-4">
+                <label for="medical_coverages" class="block mb-2 font-medium">Planes Medicos:</label>
+                <div class="checkbox-list-container">
+                    {% for plan in medical_coverages %}
+                    <div class="mb-2">
+                        <input type="checkbox" name="medical_coverages[]" value="{{ plan }}" class="mr-2" 
+                        {% if plan in doctor.medical_coverages %} checked {% endif %}>
+                        <label>{{ plan }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
 
-    <!-- Modify Profile Button -->
-    <a href="/profile/edit" class="mt-8 bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400">Editar Perfil</a>
-</div>
+            <!-- Profile Photo -->
+            <div class="mb-4">
+                <label for="photo" class="block mb-2 font-medium">Profile Photo:</label>
+                <input type="file" name="photo" class="w-full p-2 border rounded-md">
+            </div>
+
+            <input class="w-full bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400" type="submit" value="Aplicar Cambios"/>
+        </form>
+</body>
 <script>
     function toggleDropdown() {
         var dropdown = document.getElementById("profileDropdown");
@@ -137,5 +134,4 @@
         }
     }
 </script>
-</body>
 </html>

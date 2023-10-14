@@ -7,68 +7,124 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.15/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&family=Whisper&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <title>Profile</title>
+    <title>Perfil</title>
   </head>
 <body class="bg-gray-50 font-roboto">
-     <!-- Navbar -->
+<!-- Navbar -->
     <nav class="bg-white shadow-lg p-4">
-        <div class="container mx-auto flex items-center justify-between">
-            <a href="/home">
-                <img class="h-10" src="../static/images/MedEasy.svg" alt="MedEasy logo">
-            </a>
-            <div class="space-x-4">
-                <a class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded hover:bg-gray-200" href="/home">Home</a>
-                <a class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded hover:bg-gray-200" href="/about">About</a>
-                {% if '_id' not in session %}
-                <a class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded hover:bg-gray-200" href="/signin">Sign In/Sign Up</a>
-                {% endif %}
-                {% if '_id' in session %}
-                <!-- Profile Dropdown -->
-                <div class="relative inline-block text-left">
-                    <img class="h-10 w-10 rounded-full cursor-pointer" src="{{ session['image_path'] or '../static/images/generic-user-pfp.png' }}" onclick="toggleDropdown()" alt="Profile">
-                    <div id="profileDropdown" class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 z-10" style="display: none;">
-                        <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
-                        <a href="/signout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign Out</a>
-                    </div>
-                </div>
-                {% endif %}
+      <div class="container mx-auto flex items-center justify-between">
+        <a href="/home">
+          <img
+            class="h-10"
+            src="../static/images/MedEasy.svg"
+            alt="MedEasy logo"
+          />
+        </a>
+        <div class="space-x-4">
+          <a
+            class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded hover:bg-gray-200"
+            href="/home"
+            >Inicio</a
+          >
+          <a
+            class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded hover:bg-gray-200"
+            href="/about"
+            >Mas Informacion</a
+          >
+          {% if '_id' not in session %}
+          <a
+            class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded hover:bg-gray-200"
+            href="/signin"
+            >Iniciar/Incribirse</a
+          >
+          {% endif %} {% if '_id' in session %}
+          <!-- Profile Dropdown -->
+          <div class="relative inline-block text-left">
+            <img
+                class="h-10 w-10 rounded-full cursor-pointer"
+                src="{% if 'user_type' in session and session['user_type'] == 'doctor' and 'photo' in session and session['photo'] %}data:image/jpeg;base64,{{ session['photo'].replace('\n', '') }}{% else %}../static/img/generic-user-pfp.png{% endif %}"
+                onclick="toggleDropdown()"
+                alt="Perfil"
+            />
+            <div
+              id="profileDropdown"
+              class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 z-10"
+              style="display: none"
+            >
+              <a
+                href="/profile"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >Perfil</a
+              >
+              <a
+                href="/signout"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >Cerrar Sesion</a
+              >
             </div>
+          </div>
+          {% endif %}
         </div>
+      </div>
     </nav>
+    <div class="mt-10 flex flex-col items-center">
+        {% if doctor.photo %}
+        <img src="data:image/jpeg;base64,{{ doctor.photo }}" alt="Imagen de Perfil" class="h-40 w-40 rounded-full border-4 border-indigo-400 mb-5">
+        {% else %}
+        <img src="{{ session['photo'] }}" alt="Imagen de Perfil" class="h-40 w-40 rounded-full border-4 border-indigo-400 mb-5">
+        {% endif %}
 
-    <div class="doctor-profile bg-white mx-auto mt-10 p-8 rounded-lg shadow-xl max-w-xl">
-        <div class="flex items-center justify-center mb-8">
-            <img src="{{ doctor.photo_url }}" alt="Profile Picture" class="doctor-image rounded-full border-4 border-indigo-400">
-        </div>
+
         <h2 class="text-2xl font-semibold text-center mb-4">Dr. {{ doctor.first_name }} {{ doctor.last_name }}</h2>
 
-        <!-- Location & Phone Number -->
-        <p class="mb-4"><strong>Location:</strong> {{ doctor.address }}</p>
-        <p class="mb-4"><strong>Phone:</strong> {{ doctor.phone_number }}</p>
+        <!-- Contact Information -->
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-xl w-full text-gray-700 mb-6">
+            <div class="mb-4">
+                <p class="font-medium">Correo Electronico:</p>
+                <p>{{ doctor_email.email }}</p>
+            </div>
+            <div class="mb-4">
+                <p class="font-medium">Localizacion:</p>
+                <p>{{ doctor.address }}</p>
+            </div>
+            <div class="mb-4">
+                <p class="font-medium">Telefono:</p>
+                <p>{{ doctor.phone_number }}</p>
+            </div>
+        </div>
 
         <!-- Specialties -->
-        <div class="mb-4">
-            <p class="font-medium text-lg mb-2"><strong>Specialties:</strong></p>
-            <ul>
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-xl w-full text-gray-700 mb-6">
+            <p class="font-medium text-lg mb-4">Especialidad:</p>
+            <ul class="list-disc list-inside">
                 {% for specialty in doctor.specialties %}
-                    <li class="mb-1">{{ specialty }}</li>
+                <li class="mb-1">{{ specialty }}</li>
                 {% endfor %}
             </ul>
         </div>
 
         <!-- Medical Plans -->
-        <div>
-            <p class="font-medium text-lg mb-2"><strong>Medical Plans Accepted:</strong></p>
-            <ul>
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-xl w-full text-gray-700 mb-6">
+            <p class="font-medium text-lg mb-4">Planes Medicos:</p>
+            <ul class="list-disc list-inside">
                 {% for plan in doctor.medical_coverages %}
-                    <li class="mb-1">{{ plan }}</li>
+                <li class="mb-1">{{ plan }}</li>
                 {% endfor %}
             </ul>
         </div>
 
         <!-- Modify Profile Button -->
-        <button class="mt-8 bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700">Modify Profile</button>
+        <a href="/profile/edit" class="mt-8 bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400">Editar Perfil</a>
     </div>
-</body>
+    <script>
+    function toggleDropdown() {
+        var dropdown = document.getElementById("profileDropdown");
+        if (dropdown.style.display === "none" || dropdown.style.display === "") {
+            dropdown.style.display = "block";
+        } else {
+            dropdown.style.display = "none";
+        }
+    }
+</script>
 </body>
 </html>

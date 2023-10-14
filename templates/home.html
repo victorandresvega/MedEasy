@@ -36,27 +36,27 @@
           <a
             class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded hover:bg-gray-200"
             href="/home"
-            >Home</a
+            >Inicio</a
           >
           <a
             class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded hover:bg-gray-200"
             href="/about"
-            >About</a
+            >Mas Informacion</a
           >
           {% if '_id' not in session %}
           <a
             class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded hover:bg-gray-200"
             href="/signin"
-            >Sign In/Sign Up</a
+            >Iniciar/Incribirse</a
           >
           {% endif %} {% if '_id' in session %}
           <!-- Profile Dropdown -->
           <div class="relative inline-block text-left">
             <img
-              class="h-10 w-10 rounded-full cursor-pointer"
-              src="{{ session['image_path'] or '../static/images/generic-user-pfp.png' }}"
-              onclick="toggleDropdown()"
-              alt="Profile"
+                class="h-10 w-10 rounded-full cursor-pointer"
+                src="{% if 'user_type' in session and session['user_type'] == 'doctor' and 'photo' in session and session['photo'] %}data:image/jpeg;base64,{{ session['photo'].replace('\n', '') }}{% else %}../static/img/generic-user-pfp.png{% endif %}"
+                onclick="toggleDropdown()"
+                alt="Perfil"
             />
             <div
               id="profileDropdown"
@@ -66,12 +66,12 @@
               <a
                 href="/profile"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >Profile</a
+                >Perfil</a
               >
               <a
                 href="/signout"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >Sign Out</a
+                >Cerrar Sesion</a
               >
             </div>
           </div>
