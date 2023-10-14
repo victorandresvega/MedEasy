@@ -11,6 +11,7 @@ from photo import Photo
 from user import User
 from dotenv import load_dotenv
 from bson import ObjectId
+import time
 
 
 load_dotenv()
@@ -81,8 +82,9 @@ def signinPOST():
 def signupGET():
     specialties = Doctor.medicalSpecialties
     medical_coverages = Doctor.medicalCoverages
+    work_days = Doctor.daysWeek
     
-    return render_template('signup.html', specialties=specialties, medical_coverages=medical_coverages)
+    return render_template('signup.html', specialties=specialties, medical_coverages=medical_coverages, work_days= work_days)
     
 @app.route('/signup', methods=['POST'])
 def signupPOST():
@@ -114,6 +116,23 @@ def signupPOST():
         payload["address"] = request.form.get('address')
         payload["medical_coverages"] = request.form.getlist('medical_coverages[]')
         payload["phone_number"] = request.form.get('phone_number')
+        
+        schedule = {}
+        schedule["work_days"] = request.form.getlist('work_days[]')
+
+        # Convert clock_in and clock_out into epoch
+        current_date = time.strftime('%Y-%m-%d')  # Getting the current date
+        
+        clock_in_combined = current_date + ' ' + request.form.get('clock_in')
+        clock_out_combined = current_date + ' ' + request.form.get('clock_out')
+        
+        clock_in_time = time.mktime(time.strptime(clock_in_combined, '%Y-%m-%d %H:%M'))
+        clock_out_time = time.mktime(time.strptime(clock_out_combined, '%Y-%m-%d %H:%M'))
+        
+        schedule["clock_in"] = clock_in_time
+        schedule["clock_out"] = clock_out_time
+        
+        payload["schedule"] = schedule  # Add schedule to the payload
 
         photo_file = request.files.get('photo')
         if photo_file and photo_file.filename != '':
@@ -337,85 +356,59 @@ def helper_getValList(field_name, form, payload):
         return payload[field_name]
     return form.getlist(field_name)
 
-# @app.route("/Schedule/<doc_id>", methods=["GET", "POST"])
-# def schedule(doc_id):
-    
-#     user = mongo.db.users.find_one({"user_id": doc_id, "role": "doctor"})
-#     doctor = user['payload']
 
-#     medical_plans = doctor['medical_coverages']
-#     doctor_name = doctor['first_name'] + " " + doctor['last_name']
-#     doctor_image = doctor['photo_url']
-#     specialties = doctor['specialties']
-#     address = doctor['address']
-#     phone = doctor['phone_number']
+@app.route("/schedule/Dr.<first_name><last_name>", methods=["GET", "POST"])
+def schedule(first_name, last_name):
+    user = mongo.db.users.find_one({"payload.first_name": first_name, "payload.last_name": last_name, "role": "doctor"})
 
-#     if request.form == "GET":
-#         time_slots2 = []
-#         time = ''
+    user = mongo.db.users.find_one({
+     "payload.first_name": first_name, 
+     "payload.last_name": last_name, 
+     "role": "doctor"
+ })
 
-#         # time_slots= Appointment.get_available_time_slots(doc_id,"04-22-2022",mongo)
-#         return render_template("appointment.html", day='', time_slots=time_slots2,
-#                                doctor_image=doctor_image,
-#                                doctor_name=doctor_name, doctor_specialty=specialties,
-#                                doctor_address=address,
-#                                doctor_phone=phone, medical_plans=medical_plans)
-#     else:
-#         day = str(request.form.get('day'))
-#         time = ''
-#         time = request.form.get('time')
-#         appt_id = Appointment.generate_appointment_id()
-#         collection = mongo.db.events
-#         time_slots2 = Appointment.get_available_time_slots(
-#             doc_id, day, mongo, time_slots)
-#         if time:
-#             day = request.form.get('day2')
-#             print(day)
-#             Event.create_event(day, time, appt_id, doc_id, mongo)
-#             return redirect("/" + appt_id)
-#         return render_template("appointment.html", day=day, time_slots=time_slots2,
-#                                doctor_image=doctor_image,
-#                                doctor_name=doctor_name, doctor_specialty=specialties,
-#                                doctor_address=address,
-#                                doctor_phone=phone, medical_plans=medical_plans)
+    if not user:
+        flash('Doctor not found.', 'danger')
+        return redirect(url_for('home'))
 
+    doctor = user['payload']
+    medical_plans = doctor['medical_coverages']
+    doctor_name = doctor['first_name'] + " " + doctor['last_name']
+    doctor_image = doctor.get('photo', None)
+    specialties = doctor['specialties']
+    address = doctor['address']
+    phone = doctor['phone_number']
 
-# @app.route("/<appt_id>")
-# def confirmed_event(appt_id):
-#     event = Event.get_event(appt_id, mongo)
-#     date = event.get_date()
-#     start_time = event.get_start_time()
-#     appointment_id = event.get_appointment_id()
+    if request.method == "GET":
+        return render_template("scheduling.html", doctor_image=doctor_image,
+                               doctor_name=doctor_name, doctor_specialty=specialties,
+                               doctor_address=address, doctor_phone=phone, medical_plans=medical_plans)
 
-#     return render_template("event.html", date=date, start_time=start_time, appointment_id=appointment_id)
+    elif request.method == "POST":
+        day = str(request.form.get('day'))
+        time_slot = request.form.get('time')
+        patient_id = session.get('_id', None)
 
+        if not patient_id:
+            flash('You need to be logged in to schedule an appointment.', 'danger')
+            return redirect(url_for('signinGET'))
 
-# @app.route("/seed_db")
-# def seed_db():
-#     collection = mongo.db.events
-#     # collection.remove({})
-#     doc_id = doctor_ids["Richard Silverstein"]
-#     collection = mongo.db.events
-#     # event1 = Event.create_event("22/06/2022", "08:30am", "2423fe323", doc_id, mongo)
-#     event2 = Event.create_event(
-#         "04/25/2022", "09:30am", "2423fe323", doc_id, mongo)
-#     event3 = Event.create_event(
-#         "04/25/2022", "10:30am", "2423fe323", doc_id, mongo)
-#     event4 = Event.create_event(
-#         "04/25/2022", "11:30am",  "2423fe323", doc_id, mongo)
-#     event5 = Event.create_event(
-#         "04/25/2022", "01:30pm",  "2423fe323", doc_id, mongo)
+        # Convert the day and time_slot into epoch timestamp
+        appointment_time = time.mktime(time.strptime(day + " " + time_slot, '%m-%d-%Y %H:%M%p'))
 
-#     collection = mongo.db.doctors
-#     Doctor.create_doctor("John", "Green", ['dermatologist', "allergist"],
-#                          "2925 Sycamore Dr # 204, Simi Valley, CA 93065, United States", 18.368650, -66.053291,
-#                          ["United Health", "Triple S"], "787-689-9012",
-#                          "https://totalcommercial.com/photos/1/206401-resized.jpg", mongo)
-#     doctor1 = Doctor.create_doctor("Damaris", "Torres", ["neurologist"], "San Juan, P.R.", 18.466333, -66.105721,
-#                                    ["Triple S", "Medicaid"], "787-777-7776", 'url()', mongo)
-#     doctor1 = Doctor.create_doctor(" Jose", "Rodriguez", ["dermatologist"], "Rio Grande, P.R.", 18.38023, -65.83127,
-#                                    ["Triple S"], "787-776-7776", 'url()', mongo)
-#     doctor1 = Doctor.create_doctor("Pedro", "Figueroa", ["allergist"], "Mayaguez, P.R.", 18.20107, -67.139627,
-#                                    ["Medicaid"], "787-576-7776", 'url()', mongo)
+        # Here, check if the slot is already booked.
+        existing_appointment = mongo.db.appointments.find_one({"timestamp": appointment_time, "doctor_id": ObjectId(doc_id)})
+        if existing_appointment:
+            flash('The slot is already booked. Please choose another slot.', 'danger')
+            return redirect(url_for('schedule', doc_id=doc_id))
 
-#     return "seeded successfully"
+        # Otherwise, create the appointment.
+        appointment = {
+            "doctor_id": ObjectId(doc_id),
+            "patient_id": ObjectId(patient_id),
+            "timestamp": appointment_time
+        }
+
+        mongo.db.appointments.insert_one(appointment)
+        flash('Appointment scheduled successfully!', 'success')
+        return redirect(url_for('profile'))

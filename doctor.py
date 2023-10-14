@@ -8,6 +8,8 @@ class Doctor:
     medicalSpecialties = sorted({'Cardiólogo', 'Dermatólogo', 'Alergista', 'Generalista', 'Pediatra', 'Ortopeda', 'Oftalmólogo', 'Radiólogo'})
     
     medicalCoverages = sorted({'Triple-S Salud', 'Molina Healthcare of Puerto Rico', 'MMM (Medicare y Mucho Más)', 'PMC Medicare Choice','Humana'})
+    
+    daysWeek = [ "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo" ]
 
     def __init__(self, first_name, last_name, specialties, address, lat, lng, medical_coverages, phone_number, photo):
         self.first_name = self.valid_first_name(first_name)
