@@ -48,7 +48,8 @@ def home():
         name = request.form.get("doctor-name")
         users = Doctor.get_filtered_doctors(mongo.db, specialty, name)
         
-    return render_template('home.html', users=users, specialties=specialties)
+    logged_in = "_id" in session
+    return render_template('home.html', users=users, specialties=specialties, logged_in=logged_in)
 
 
 
@@ -121,6 +122,11 @@ def profile():
 @app.route("/Schedule/<doc_id>", methods=["GET", "POST"])
 def schedule(doc_id):
     
+    # Check if user is logged in
+    if '_id' not in session:
+        flash('Please sign in to schedule an appointment.', 'danger')
+        return redirect(url_for('signinGET'))
+
     user = mongo.db.users.find_one({"user_id": doc_id, "role": "doctor"})
     doctor = user['payload']
 

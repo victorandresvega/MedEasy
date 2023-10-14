@@ -120,28 +120,21 @@
 
         <div class="mt-6">
           {% for user in users %}
-          <a
-            href="/Schedule/{{user['doc_id']}}"
-            class="block border p-4 my-2 rounded shadow"
-          >
-            <div class="flex items-center">
-              <span class="material-icons text-blue-500 text-4xl mr-4"
-                >account_circle</span
-              >
-              <div>
-                <h2 class="text-xl font-semibold">
-                  Dr. {{ user.payload['first_name'] }} {{
-                  user.payload['last_name'] }}
-                </h2>
-                <p class="text-gray-600">
-                  {% for specialty in user.payload['specialties'] %} {{
-                  specialty }} {% endfor %}
-                </p>
+          <a href="/Schedule/{{ user['_id'] }}" class="block border p-4 my-2 rounded shadow doctor-link">
+              <div class="flex items-center">
+                  <span class="material-icons text-blue-500 text-4xl mr-4">account_circle</span>
+                  <div>
+                      <h2 class="text-xl font-semibold">
+                          Dr. {{ user.payload['first_name'] }} {{ user.payload['last_name'] }}
+                      </h2>
+                      <p class="text-gray-600">
+                          {% for specialty in user.payload['specialties'] %} {{ specialty }} {% endfor %}
+                      </p>
+                  </div>
               </div>
-            </div>
           </a>
           {% endfor %}
-        </div>
+      </div>
       </form>
 
       <!-- Google Map -->
@@ -171,5 +164,20 @@
           event.stopPropagation();
         });
     </script>
+
+    <!-- Script to handle un-registered users. -->
+    <script>
+    const doctors = document.querySelectorAll('.doctor-link');
+    
+    doctors.forEach(doc => {
+        doc.addEventListener('click', function(e) {
+            {% if not logged_in %}
+                e.preventDefault();  // Stop the regular link behavior
+                alert('Please sign in to schedule an appointment.');
+            {% endif %}
+        });
+    });
+</script>
+
   </body>
 </html>
