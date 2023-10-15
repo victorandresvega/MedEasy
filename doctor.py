@@ -11,7 +11,7 @@ class Doctor:
     
     daysWeek = [ "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo" ]
 
-    def __init__(self, first_name, last_name, specialties, address, lat, lng, medical_coverages, phone_number, photo):
+    def __init__(self, first_name, last_name, specialties, address, lat, lng, medical_coverages, phone_number, photo, schedule=None):
         self.first_name = self.valid_first_name(first_name)
         self.last_name = self.valid_last_name(last_name)
         self.address = self.valid_address(address)
@@ -22,6 +22,7 @@ class Doctor:
         self.specialties = self.valid_specialties(specialties)
         self.medical_coverages = self.valid_medical_coverages(medical_coverages)
         self.role = 'doctor'
+        self.schedule = schedule or {"work_days": [], "clock_in": "00:00", "clock_out": "00:00"}
 
     def to_json(self):
         return {
@@ -35,7 +36,8 @@ class Doctor:
             'phone_number': self.phone_number,
             'doc_id': self.doc_id,
             'photo': self.photo,
-            'role': self.role
+            'role': self.role,
+            'schedule': self.schedule
         }
 
 # TODO REVIEW

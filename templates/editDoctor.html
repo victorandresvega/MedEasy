@@ -87,33 +87,65 @@
                 <input type="tel" name="phone_number" value="{{ doctor.phone_number }}" required class="w-full p-2 border rounded-md">
             </div>
             
-            <!-- Specialties -->
-            <div class="mb-4">
-                <label for="specialties" class="block mb-2 font-medium">Especialidad:</label>
-                <div class="checkbox-list-container">
-                    {% for specialty in specialties %}
-                    <div class="mb-2">
-                        <input type="checkbox" name="specialties[]" value="{{ specialty }}" class="mr-2" 
-                        {% if specialty in doctor.specialties %} checked {% endif %}>
-                        <label>{{ specialty }}</label>
+            <!-- Container for specialties, medical_coverages, and workdays -->
+            <div class="flex space-x-4 mb-4">
+                <!-- Specialties -->
+                <div class="flex-1">
+                    <label for="specialties" class="block mb-2 font-medium">Especialidad(es):</label>
+                    <div class="checkbox-list-container">
+                        {% for specialty in specialties %}
+                        <div class="mb-2">
+                            <input type="checkbox" name="specialties[]" value="{{ specialty }}" class="mr-2" 
+                            {% if specialty in doctor.specialties %} checked {% endif %}>
+                            <label>{{ specialty }}</label>
+                        </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
+                </div>
+
+                <!-- Medical Plans -->
+                <div class="flex-1">
+                    <label for="medical_coverages" class="block mb-2 font-medium">Planes Medicos:</label>
+                    <div class="checkbox-list-container">
+                        {% for plan in medical_coverages %}
+                        <div class="mb-2">
+                            <input type="checkbox" name="medical_coverages[]" value="{{ plan }}" class="mr-2" 
+                            {% if plan in doctor.medical_coverages %} checked {% endif %}>
+                            <label>{{ plan }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Work Days -->
+                <div class="flex-1">
+                    <label for="work_days" class="block mb-2 font-medium">Dias de Trabajo:</label>
+                    <div class="checkbox-list-container">
+                        {% for day in work_days %}
+                        <div class="mb-2">
+                            <input type="checkbox" name="work_days[]" value="{{ day }}" class="mr-2" 
+                            {% set schedule = doctor.schedule|default({}) %}
+                            {% if schedule.work_days is defined and day in schedule.work_days %} checked {% endif %}>
+
+                            <label>{{ day }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
 
-            <!-- Medical Plans -->
+            <!-- Clock In and Clock Out times -->
             <div class="mb-4">
-                <label for="medical_coverages" class="block mb-2 font-medium">Planes Medicos:</label>
-                <div class="checkbox-list-container">
-                    {% for plan in medical_coverages %}
-                    <div class="mb-2">
-                        <input type="checkbox" name="medical_coverages[]" value="{{ plan }}" class="mr-2" 
-                        {% if plan in doctor.medical_coverages %} checked {% endif %}>
-                        <label>{{ plan }}</label>
-                    </div>
-                    {% endfor %}
-                </div>
+                <label for="clock_in" class="block mb-2 font-medium">Hora de Entrada:</label>
+                <input type="time" name="clock_in" value="{{ doctor.schedule.clock_in|time(format='%H:%M') }}" class="w-full p-2 border rounded-md">
+
             </div>
+
+            <div class="mb-4">
+                <label for="clock_out" class="block mb-2 font-medium">Hora de Salida:</label>
+                <input type="time" name="clock_out" value="{{ doctor.schedule.clock_out|time(format='%H:%M') }}" class="w-full p-2 border rounded-md">
+            </div>
+
 
             <!-- Profile Photo -->
             <div class="mb-4">
