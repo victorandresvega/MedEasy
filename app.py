@@ -405,60 +405,51 @@ def time_filter(s, format="%I:%M %p"):
     return datetime.fromtimestamp(s).strftime(format)
 
 
+@app.route("/schedule/<doc_id>", methods=["GET", "POST"])
+def schedule(doc_id):
+    
+    user = mongo.db.users.find_one({"_id": ObjectId(doc_id)})
 
+    if not user:
+        flash('Doctor not found.', 'danger')
+        return redirect(url_for('home'))
 
-# @app.route("/schedule/Dr.<first_name><last_name>", methods=["GET", "POST"])
-# def schedule(first_name, last_name):
-#     user = mongo.db.users.find_one({"payload.first_name": first_name, "payload.last_name": last_name, "role": "doctor"})
+    doctor = user['payload']
+    medical_plans = doctor['medical_coverages']
+    doctor_name = doctor['first_name'] + " " + doctor['last_name']
+    doctor_image = doctor.get('photo', None)
+    specialties = doctor['specialties']
+    address = doctor['address']
+    phone = doctor['phone_number']
 
-#     user = mongo.db.users.find_one({
-#      "payload.first_name": first_name, 
-#      "payload.last_name": last_name, 
-#      "role": "doctor"
-#  })
+    if request.method == "GET":
+        return render_template("scheduling.html", doctor=doctor)
 
-#     if not user:
-#         flash('Doctor not found.', 'danger')
-#         return redirect(url_for('home'))
+    elif request.method == "POST":
+        day = str(request.form.get('day'))
+        time_slot = request.form.get('time')
+        patient_id = session.get('_id', None)
 
-#     doctor = user['payload']
-#     medical_plans = doctor['medical_coverages']
-#     doctor_name = doctor['first_name'] + " " + doctor['last_name']
-#     doctor_image = doctor.get('photo', None)
-#     specialties = doctor['specialties']
-#     address = doctor['address']
-#     phone = doctor['phone_number']
+        if not patient_id:
+            flash('You need to be logged in to schedule an appointment.', 'danger')
+            return redirect(url_for('signinGET'))
 
-#     if request.method == "GET":
-#         return render_template("scheduling.html", doctor_image=doctor_image,
-#                                doctor_name=doctor_name, doctor_specialty=specialties,
-#                                doctor_address=address, doctor_phone=phone, medical_plans=medical_plans)
+        # Convert the day and time_slot into epoch timestamp
+        appointment_time = time.mktime(time.strptime(day + " " + time_slot, '%m-%d-%Y %H:%M%p'))
 
-#     elif request.method == "POST":
-#         day = str(request.form.get('day'))
-#         time_slot = request.form.get('time')
-#         patient_id = session.get('_id', None)
+        # Here, check if the slot is already booked.
+        existing_appointment = mongo.db.appointments.find_one({"timestamp": appointment_time, "doctor_id": ObjectId(doc_id)})
+        if existing_appointment:
+            flash('The slot is already booked. Please choose another slot.', 'danger')
+            return redirect(url_for('schedule', doc_id=doc_id))
 
-#         if not patient_id:
-#             flash('You need to be logged in to schedule an appointment.', 'danger')
-#             return redirect(url_for('signinGET'))
+        # Otherwise, create the appointment.
+        appointment = {
+            "doctor_id": ObjectId(doc_id),
+            "patient_id": ObjectId(patient_id),
+            "timestamp": appointment_time
+        }
 
-#         # Convert the day and time_slot into epoch timestamp
-#         appointment_time = time.mktime(time.strptime(day + " " + time_slot, '%m-%d-%Y %H:%M%p'))
-
-#         # Here, check if the slot is already booked.
-#         existing_appointment = mongo.db.appointments.find_one({"timestamp": appointment_time, "doctor_id": ObjectId(doc_id)})
-#         if existing_appointment:
-#             flash('The slot is already booked. Please choose another slot.', 'danger')
-#             return redirect(url_for('schedule', doc_id=doc_id))
-
-#         # Otherwise, create the appointment.
-#         appointment = {
-#             "doctor_id": ObjectId(doc_id),
-#             "patient_id": ObjectId(patient_id),
-#             "timestamp": appointment_time
-#         }
-
-#         mongo.db.appointments.insert_one(appointment)
-#         flash('Appointment scheduled successfully!', 'success')
-#         return redirect(url_for('profile'))
+        mongo.db.appointments.insert_one(appointment)
+        flash('Appointment scheduled successfully!', 'success')
+        return redirect(url_for('profile'))

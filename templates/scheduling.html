@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&family=Whisper&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.15/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../static/css/style.css" />
+    <title>Citas</title>
+  </head>
+
+  <body class="bg-gray-100 font-roboto">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-lg p-4">
+      <div class="container mx-auto flex items-center justify-between">
+        <a href="/home">
+          <img
+            class="h-10"
+            src="../static/images/MedEasy.svg"
+            alt="MedEasy logo"
+          />
+        </a>
+        <div class="space-x-4">
+          <a
+            class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded hover:bg-gray-200"
+            href="/home"
+            >Inicio</a
+          >
+          <a
+            class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded hover:bg-gray-200"
+            href="/about"
+            >Mas Informacion</a
+          >
+          {% if '_id' not in session %}
+          <a
+            class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded hover:bg-gray-200"
+            href="/signin"
+            >Iniciar/Incribirse</a
+          >
+          {% endif %} {% if '_id' in session %}
+          <!-- Profile Dropdown -->
+          <div class="relative inline-block text-left">
+            <img
+              class="h-10 w-10 rounded-full cursor-pointer"
+              src="{% if 'user_type' in session and session['user_type'] == 'doctor' and 'photo' in session and session['photo'] %}data:image/jpeg;base64,{{ session['photo'].replace('\n', '') }}{% else %}../static/img/generic-user-pfp.png{% endif %}"
+              onclick="toggleDropdown()"
+              alt="Perfil"
+            />
+            <div
+              id="profileDropdown"
+              class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 z-10"
+              style="display: none"
+            >
+              <a
+                href="/profile"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >Perfil</a
+              >
+              <a
+                href="/signout"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >Cerrar Sesion</a
+              >
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </nav>
+    <!-- Main Content -->
+    <div class="mt-10 flex justify-center">
+      <div class="w-4/5 bg-gray-100 p-6 rounded-lg shadow-lg">
+        <!-- Doctor's Profile and Schedule Information -->
+        <div class="flex justify-between items-center mb-6">
+          <!-- Doctor's Profile and Scheduling Info -->
+          <div class="w-1/3 p-8 bg-white shadow-md rounded-md">
+            <div class="flex items-center mb-6">
+              <img
+                src="{% if doctor.photo %}data:image/jpeg;base64,{{ doctor.photo }}{% else %}../static/img/generic-user-pfp.png{% endif %}"
+                class="h-24 w-24 rounded-full mr-4"
+                alt="Doctor Profile Image"
+              />
+              <div>
+                <h2 class="text-2xl font-semibold">
+                  Dr. {{ doctor.first_name }} {{ doctor.last_name }}
+                </h2>
+                <p class="text-gray-600">
+                  {% for specialty in doctor.specialties %} {{ specialty }} {%
+                  endfor %}
+                </p>
+              </div>
+            </div>
+            <!-- Scheduling Information -->
+            <div class="mt-6">
+              <div class="flex justify-between items-center mb-4">
+                <p class="font-medium text-lg">Dias Disponibles:</p>
+                <p>{{ doctor.schedule.work_days|default([])|join(', ') }}</p>
+              </div>
+              <div class="flex justify-between items-center mb-4">
+                <p class="font-medium text-lg">Hora de Entrada:</p>
+                <p>{{ doctor.schedule.clock_in|time|default('N/A') }}</p>
+              </div>
+              <div class="flex justify-between items-center">
+                <p class="font-medium text-lg">Hora de Salida:</p>
+                <p>{{ doctor.schedule.clock_out|time|default('N/A') }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Google Map -->
+          <div class="w-2/3 ml-10">
+            <div class="h-96 bg-gray-300 rounded-md shadow-md" id="map"></div>
+          </div>
+        </div>
+
+        <!-- Calendar for Available Slots (Spanning full width) -->
+        <div class="mt-6 p-8 bg-white shadow-md rounded-md w-full">
+          <p class="font-medium text-lg mb-4">Seleccione un espacio:</p>
+          <div id="calendar"></div>
+          <button
+            id="bookAppointment"
+            class="mt-4 bg-blue-500 text-white px-6 py-2 rounded shadow-md hover:bg-blue-600"
+            disabled
+          >
+            Sacar Cita
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- JS Scripts -->
+    <script src="../static/js/script.js"></script>
+
+    <!-- Google Maps API -->
+    <script
+      async
+      defer
+      src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&callback=initMap"
+    ></script>
+
+    <!-- JS to handle dropdown display -->
+    <script>
+      document
+        .querySelector(".rounded-full")
+        .addEventListener("click", function () {
+          const dropdown = document.getElementById("profileDropdown");
+          dropdown.style.display =
+            dropdown.style.display === "none" ? "block" : "none";
+          event.stopPropagation();
+        });
+    </script>
+
+    <!-- Script to handle un-registered users. -->
+    <script>
+      const doctors = document.querySelectorAll('.doctor-link');
+
+      doctors.forEach(doc => {
+          doc.addEventListener('click', function(e) {
+              {% if not logged_in %}
+                  e.preventDefault();  // Stop the regular link behavior
+                  alert('Por favor inicie session para por sacar una cita.');
+              {% endif %}
+          });
+      });
+    </script>
+
+    <script>
+      function initMap() {
+        // You should provide latitude and longitude of the doctor's location.
+        var location = {
+          lat: YOUR_LATITUDE,
+          lng: YOUR_LONGITUDE,
+        };
+
+        var map = new google.maps.Map(document.getElementById("map"), {
+          zoom: 15,
+          center: location,
+        });
+
+        new google.maps.Marker({
+          position: location,
+          map: map,
+        });
+      }
+
+      // Mockup for the calendar and available slots
+      // In a real scenario, you should be fetching these slots from the server, based on the doctor's availability
+      let availableSlots = ["10:00 AM", "11:00 AM", "1:00 PM"];
+      let calendar = document.getElementById("calendar");
+
+      availableSlots.forEach((slot) => {
+        let slotBtn = document.createElement("button");
+        slotBtn.textContent = slot;
+        slotBtn.className = "slot-button";
+        calendar.appendChild(slotBtn);
+
+        slotBtn.addEventListener("click", function () {
+          document.querySelectorAll(".slot-button").forEach((btn) => {
+            btn.classList.remove("selected");
+          });
+          slotBtn.classList.add("selected");
+          document.getElementById("bookAppointment").disabled = false;
+        });
+      });
+
+      document
+        .getElementById("bookAppointment")
+        .addEventListener("click", function () {
+          let selectedSlot = document.querySelector(".slot-button.selected");
+          if (!selectedSlot) {
+            alert("Por favor elija un espacio disponible!");
+            return;
+          }
+
+          // Add logic to create an appointment with the slot's datetime, and both patient and doctor's id.
+
+          alert("Appointment booked for " + selectedSlot.textContent);
+        });
+    </script>
+  </body>
+</html>

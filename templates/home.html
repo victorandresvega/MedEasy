@@ -120,7 +120,7 @@
       <div class="doctor-list-container">
         <div class="mt-6">
           {% for user in users %}
-          <a href="/Schedule/{{ user['_id'] }}" class="block border p-4 my-2 rounded shadow doctor-link">
+          <a href="/schedule/{{ user['_id'] }}" class="block border p-4 my-2 rounded shadow doctor-link">
               <div class="flex items-center">
                   <img
                     src="{% if user.payload['photo'] %}data:image/jpeg;base64,{{ user.payload['photo'] }}{% else %}../static/img/generic-user-pfp.png{% endif %}"
@@ -178,7 +178,7 @@
         doc.addEventListener('click', function(e) {
             {% if not logged_in %}
                 e.preventDefault();  // Stop the regular link behavior
-                alert('Please sign in to schedule an appointment.');
+                alert('Por favor inicie session para por sacar una cita.');
             {% endif %}
         });
     });
