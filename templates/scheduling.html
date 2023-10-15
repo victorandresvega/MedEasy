@@ -16,8 +16,13 @@
       href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.15/dist/tailwind.min.css"
       rel="stylesheet"
     />
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.9.0/main.min.css" rel="stylesheet"/>
+
+    <script src= "https://cdn.jsdelivr.net/npm/fullcalendar@5.9.0/main.min.js"></script>
+
     <link rel="stylesheet" href="../static/css/style.css" />
     <title>Citas</title>
+
   </head>
 
   <body class="bg-gray-100 font-roboto">
@@ -80,63 +85,74 @@
     </nav>
     <!-- Main Content -->
     <div class="mt-10 flex justify-center">
-      <div class="w-4/5 bg-gray-100 p-6 rounded-lg shadow-lg">
-        <!-- Doctor's Profile and Schedule Information -->
-        <div class="flex justify-between items-center mb-6">
-          <!-- Doctor's Profile and Scheduling Info -->
-          <div class="w-1/3 p-8 bg-white shadow-md rounded-md">
-            <div class="flex items-center mb-6">
-              <img
-                src="{% if doctor.photo %}data:image/jpeg;base64,{{ doctor.photo }}{% else %}../static/img/generic-user-pfp.png{% endif %}"
-                class="h-24 w-24 rounded-full mr-4"
-                alt="Doctor Profile Image"
-              />
-              <div>
-                <h2 class="text-2xl font-semibold">
-                  Dr. {{ doctor.first_name }} {{ doctor.last_name }}
-                </h2>
-                <p class="text-gray-600">
-                  {% for specialty in doctor.specialties %} {{ specialty }} {%
-                  endfor %}
-                </p>
-              </div>
-            </div>
-            <!-- Scheduling Information -->
-            <div class="mt-6">
-              <div class="flex justify-between items-center mb-4">
-                <p class="font-medium text-lg">Dias Disponibles:</p>
-                <p>{{ doctor.schedule.work_days|default([])|join(', ') }}</p>
-              </div>
-              <div class="flex justify-between items-center mb-4">
-                <p class="font-medium text-lg">Hora de Entrada:</p>
-                <p>{{ doctor.schedule.clock_in|time|default('N/A') }}</p>
-              </div>
-              <div class="flex justify-between items-center">
-                <p class="font-medium text-lg">Hora de Salida:</p>
-                <p>{{ doctor.schedule.clock_out|time|default('N/A') }}</p>
-              </div>
-            </div>
-          </div>
+        <div class="w-4/5 bg-gray-100 p-6 rounded-lg shadow-lg flex">
+        <!-- Doctor's Profile, Map and Schedule Information -->
+        <div class="flex flex-col w-1/2 mr-4">
+            <!-- Doctor's Profile, Address, Phone, and Scheduling Info -->
+            <div class="p-8 bg-white shadow-md rounded-md">
+                <div class="flex items-center mb-6">
+                    <!-- Doctor's Profile -->
+                    <img
+                        src="{% if doctor.photo %}data:image/jpeg;base64,{{ doctor.photo }}{% else %}../static/img/generic-user-pfp.png{% endif %}"
+                        class="h-24 w-24 rounded-full mr-4"
+                        alt="Doctor Profile Image"
+                    />
+                    <div>
+                        <h2 class="text-2xl font-semibold">
+                            Dr. {{ doctor.first_name }} {{ doctor.last_name }}
+                        </h2>
+                        <p class="text-gray-600">
+                            {% for specialty in doctor.specialties %} {{ specialty }} {% endfor %}
+                        </p>
+                    </div>
+                </div>
 
-          <!-- Google Map -->
-          <div class="w-2/3 ml-10">
-            <div class="h-96 bg-gray-300 rounded-md shadow-md" id="map"></div>
-          </div>
+                <div class="mt-6">
+                    <!-- Doctor's Address -->
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="font-medium text-lg"><strong>Direccion:</strong></span>
+                        <p>{{ doctor.address }}</p>
+                    </div>
+
+                    <!-- Doctor's Phone Number-->
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="font-medium text-lg"><strong>Telefono:</strong></span>
+                        <p>{{ doctor.phone_number }}</p>
+                    </div>
+
+                    <!-- Scheduling Information -->
+                    <div class="flex justify-between items-center mb-4">
+                        <p class="font-medium text-lg"><strong>Dias Disponibles:</strong></p>
+                        <p>{{ doctor.schedule.work_days|default([])|join(', ') }}</p>
+                    </div>
+                    <div class="flex justify-between items-center mb-4">
+                        <p class="font-medium text-lg"><strong>Hora de Entrada:</strong></p>
+                        <p>{{ doctor.schedule.clock_in|time|default('N/A') }}</p>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <p class="font-medium text-lg"><strong>Hora de Salida:</strong></p>
+                        <p>{{ doctor.schedule.clock_out|time|default('N/A') }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Google Map -->
+            <div class="mt-4 h-96 bg-gray-300 rounded-md shadow-md" id="map"></div>
         </div>
 
-        <!-- Calendar for Available Slots (Spanning full width) -->
-        <div class="mt-6 p-8 bg-white shadow-md rounded-md w-full">
-          <p class="font-medium text-lg mb-4">Seleccione un espacio:</p>
-          <div id="calendar"></div>
-          <button
-            id="bookAppointment"
-            class="mt-4 bg-blue-500 text-white px-6 py-2 rounded shadow-md hover:bg-blue-600"
-            disabled
-          >
-            Sacar Cita
-          </button>
+        <!-- Calendar for Available Slots -->
+        <div class="w-1/2 p-8 bg-white shadow-md rounded-md flex flex-col items-center">
+            <p class="font-medium text-lg mb-4 w-full text-left"><strong>Seleccione un espacio:</strong></p>
+            <div id="calendar" class="w-full"></div>
+            <button
+                id="bookAppointment"
+                class="mt-4 bg-blue-500 text-white px-6 py-2 rounded shadow-md hover:bg-blue-600"
+                disabled
+            >
+                Sacar Cita
+            </button>
         </div>
-      </div>
+    </div>
     </div>
 
     <!-- JS Scripts -->
@@ -146,7 +162,7 @@
     <script
       async
       defer
-      src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&callback=initMap"
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBsJY7KojcXDneWqXV1h0J891NbgFrdglE&map_ids=122517338e1e4a8&callback=initMap"
     ></script>
 
     <!-- JS to handle dropdown display -->
@@ -175,58 +191,71 @@
       });
     </script>
 
+    <!-- Script for Calendr-->
     <script>
-      function initMap() {
-        // You should provide latitude and longitude of the doctor's location.
-        var location = {
-          lat: YOUR_LATITUDE,
-          lng: YOUR_LONGITUDE,
-        };
+        document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
 
-        var map = new google.maps.Map(document.getElementById("map"), {
-          zoom: 15,
-          center: location,
-        });
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'timeGridWeek',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+        },
+        expandRows: true,
+        navLinks: true,
+        selectable: true,
+        selectMirror: true,
+        dayMaxEvents: true,
+        weekends: {% if "Saturday" in doctor.schedule.work_days or "Sunday" in doctor.schedule.work_days %} true {% else %} false {% endif %},
+        businessHours: {
+            daysOfWeek: {{ doctor.schedule.work_days|tojson|replace("Sunday", "0")|replace("Monday", "1")|replace("Tuesday", "2")|replace("Wednesday", "3")|replace("Thursday", "4")|replace("Friday", "5")|replace("Saturday", "6") }},
+            startTime: "{{ doctor.schedule.clock_in|time|default('08:00') }}",
+            endTime: "{{ doctor.schedule.clock_out|time|default('18:00') }}",
+        },
+        select: function(info) {
+            let selectedStartTime = info.startStr.split('T')[1];
+            let selectedEndTime = info.endStr.split('T')[1];
 
-        new google.maps.Marker({
-          position: location,
-          map: map,
-        });
-      }
+            let availableSlots = []; 
 
-      // Mockup for the calendar and available slots
-      // In a real scenario, you should be fetching these slots from the server, based on the doctor's availability
-      let availableSlots = ["10:00 AM", "11:00 AM", "1:00 PM"];
-      let calendar = document.getElementById("calendar");
+            if (availableSlots.includes(selectedStartTime)) {
+                if (confirm('Do you want to book the appointment at ' + selectedStartTime + ' to ' + selectedEndTime + '?')) {
+                }
+            } else {
+                alert('This slot is not available. Please select another slot.');
+            }
+        },
+        events: function(fetchInfo, successCallback, failureCallback) {
+            let doctorId = "YOUR_DOCTOR_ID"; // Replace this with the actual way you retrieve the doctor's ID
+            let events = [];
+            let work_days = {{ doctor.schedule.work_days|default([])|tojson }};
+            let clock_in = "{{ doctor.schedule.clock_in|time|default('N/A') }}";
+            let clock_out = "{{ doctor.schedule.clock_out|time|default('N/A') }}";
 
-      availableSlots.forEach((slot) => {
-        let slotBtn = document.createElement("button");
-        slotBtn.textContent = slot;
-        slotBtn.className = "slot-button";
-        calendar.appendChild(slotBtn);
+            let start_date = new Date(fetchInfo.startStr);
+            let end_date = new Date(fetchInfo.endStr);
 
-        slotBtn.addEventListener("click", function () {
-          document.querySelectorAll(".slot-button").forEach((btn) => {
-            btn.classList.remove("selected");
-          });
-          slotBtn.classList.add("selected");
-          document.getElementById("bookAppointment").disabled = false;
-        });
-      });
+            while (start_date <= end_date) {
+                if (work_days.includes(start_date.toLocaleDateString('en-US', { weekday: 'long' }))) {
+                    events.push({
+                        title: 'Available',
+                        start: new Date(start_date.toDateString() + " " + clock_in),
+                        end: new Date(start_date.toDateString() + " " + clock_out),
+                        color: 'green'
+                    });
+                }
+                start_date.setDate(start_date.getDate() + 1);
+            }
+            successCallback(events);
+        }
+    });
 
-      document
-        .getElementById("bookAppointment")
-        .addEventListener("click", function () {
-          let selectedSlot = document.querySelector(".slot-button.selected");
-          if (!selectedSlot) {
-            alert("Por favor elija un espacio disponible!");
-            return;
-          }
+    calendar.render();
+});
 
-          // Add logic to create an appointment with the slot's datetime, and both patient and doctor's id.
-
-          alert("Appointment booked for " + selectedSlot.textContent);
-        });
     </script>
+
   </body>
 </html>

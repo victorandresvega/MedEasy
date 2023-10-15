@@ -1,6 +1,7 @@
 import hashlib
 import time
 import re
+from datetime import datetime, timedelta
 
 
 class Doctor:
@@ -11,16 +12,14 @@ class Doctor:
     
     daysWeek = [ "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo" ]
 
-    def __init__(self, first_name, last_name, specialties, address, lat, lng, medical_coverages, phone_number, photo, schedule=None):
+    def __init__(self, first_name, last_name, specialties, address, medical_coverages, phone_number, photo, schedule=None):
         self.first_name = self.valid_first_name(first_name)
         self.last_name = self.valid_last_name(last_name)
         self.address = self.valid_address(address)
         self.phone_number = self.valid_phone_number(phone_number)
         self.photo = self.valid_photo(photo)
-        self.lat = self.valid_lat(lat)
-        self.lng = self.valid_lng(lng)
-        self.specialties = self.valid_specialties(specialties)
-        self.medical_coverages = self.valid_medical_coverages(medical_coverages)
+        self.specialties = specialties
+        self.medical_coverages = medical_coverages
         self.role = 'doctor'
         self.schedule = schedule or {"work_days": [], "clock_in": "00:00", "clock_out": "00:00"}
 
@@ -29,8 +28,6 @@ class Doctor:
             'first_name': self.first_name,
             'last_name': self.last_name,
             'address': self.address,
-            'lat': self.lat,
-            'lng': self.lng,
             'specialties': self.specialties,
             'medical_coverages': self.medical_coverages,
             'phone_number': self.phone_number,
@@ -77,7 +74,35 @@ class Doctor:
                     if spty == specialty:
                         result.append(doctor)
         return result
+    
+    def get_time_slots(self):
+        """Generate time slots every 30 minutes between clock_in and clock_out."""
+        time_format = "%H:%M"
+        
+        clock_in_str = str(self.schedule['clock_in'])
+        clock_out_str = str(self.schedule['clock_out'])
 
+        # Convert epoch string to datetime object
+        clock_in_time = datetime.fromtimestamp(float(clock_in_str))
+        clock_out_time = datetime.fromtimestamp(float(clock_out_str))
+
+        # Extract only the hour and minute from the datetime object
+        clock_in_time = datetime.strptime(clock_in_time.strftime(time_format), time_format)
+        clock_out_time = datetime.strptime(clock_out_time.strftime(time_format), time_format)
+
+        time_slots = []
+        current_time = clock_in_time
+
+        while current_time < clock_out_time:
+            time_slots.append(current_time.strftime(time_format))
+            current_time += timedelta(minutes=30)
+
+        return time_slots
+
+    
+    # --------------------------------------------------------------------------
+
+    # TODO review all validations
     def valid_first_name(self, first_name):
         pattern = re.compile(r"^[A-Z][a-z'-]{1,24}$")
         if not pattern.match(first_name):
@@ -126,6 +151,9 @@ class Doctor:
         if not pattern.match(photo):
             return '/static/img/generic-user-pfp.png'
         return photo
+    
+    # -------------------------------------------------------------------------
+    
     
     # TODO REVIEW
     @staticmethod

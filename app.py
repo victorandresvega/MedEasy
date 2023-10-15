@@ -2,7 +2,7 @@ import os
 import certifi
 import time
 
-from flask import Flask, render_template, request, redirect, flash, session, url_for
+from flask import Flask, render_template, request, redirect, flash, session, url_for, jsonify
 from flask_pymongo import PyMongo
 from flask_bcrypt import Bcrypt
 from appointment import Appointment
@@ -34,11 +34,6 @@ app.config[
 
 mongo = PyMongo(app, tlsCAFile=certifi.where())
 bcrypt = Bcrypt(app)
-
-# time_slots = ["08:00am", "08:30am", "09:00am", "09:30am", "10:00am", "10:30am", "11:00am", "11:30am", "12:00pm",
-#               "12:30pm", "01:00pm", "01:30pm", "02:00pm", "02:30pm", "03:00pm", "03:30pm", "04:00pm", "04:30pm"]
-
-# doctor_ids = {"Richard Silverstein": "1234"}
 
 @app.route("/", methods=["GET", "POST"])
 @app.route("/home", methods=["GET", "POST"])
@@ -180,8 +175,12 @@ def profile():
 
     # Convert the epoch timestamp to date and time for each appointment
     for appointment in user_appointments:
-        appointment['date'] = Appointment.epoch_to_date(appointment['timestamp'])
-        appointment['time'] = Appointment.epoch_to_time(appointment['timestamp'])
+        appointment_date = datetime.fromtimestamp(appointment['timestamp']).strftime('%m-%d-%Y')
+        appointment_time = time_filter(appointment['timestamp'])
+
+        appointment['date'] = appointment_date
+        appointment['time'] = appointment_time
+
 
 
         doctor = mongo.db.users.find_one({"_id": appointment['doctor_id']})
@@ -347,14 +346,15 @@ def edit_profile():
             clock_out_value = user.payload.get('schedule', {}).get('clock_out', None)
             
             if clock_in_value is not None:
-                clock_in_time = datetime.fromtimestamp(int(clock_in_value)).strftime('%I:%M%p')
+                clock_in_time = epoch_to_human_readable(clock_in_value)
             else:
                 clock_in_time = '00:00'
-                
+                            
             if clock_out_value is not None:
-                clock_out_time = datetime.fromtimestamp(int(clock_out_value)).strftime('%I:%M%p')
+                clock_out_time = epoch_to_human_readable(clock_out_value)
             else:
                 clock_out_time = '00:00'
+
 
         return render_template('editDoctor.html', doctor_email=user, doctor=user.payload,
                        specialties=specialties, medical_coverages=medical_coverages, work_days=work_days,
@@ -397,19 +397,20 @@ def time_to_epoch(date_str, time_str, format_str='%Y-%m-%d %H:%M'):
     combined_str = date_str + ' ' + time_str
     return time.mktime(time.strptime(combined_str, format_str))
 
+def epoch_to_human_readable(epoch_time):
+    return datetime.fromtimestamp(epoch_time).strftime('%I:%M %p')
 
 @app.template_filter('time')
 def time_filter(s, format="%I:%M %p"):
     if s is None:
         return 'N/A'
-    return datetime.fromtimestamp(s).strftime(format)
+    return epoch_to_human_readable(s)
 
 
 @app.route("/schedule/<doc_id>", methods=["GET", "POST"])
 def schedule(doc_id):
-    
     user = mongo.db.users.find_one({"_id": ObjectId(doc_id)})
-
+    
     if not user:
         flash('Doctor not found.', 'danger')
         return redirect(url_for('home'))
@@ -421,13 +422,15 @@ def schedule(doc_id):
     specialties = doctor['specialties']
     address = doctor['address']
     phone = doctor['phone_number']
+    doctor_obj = Doctor(**doctor)
+    time_slots = doctor_obj.get_time_slots()
 
     if request.method == "GET":
-        return render_template("scheduling.html", doctor=doctor)
+        return render_template("scheduling.html", doctor=doctor, time_slots=time_slots)
 
     elif request.method == "POST":
         day = str(request.form.get('day'))
-        time_slot = request.form.get('time')
+        time_slot = request.form.get('time_slot') 
         patient_id = session.get('_id', None)
 
         if not patient_id:
@@ -435,7 +438,7 @@ def schedule(doc_id):
             return redirect(url_for('signinGET'))
 
         # Convert the day and time_slot into epoch timestamp
-        appointment_time = time.mktime(time.strptime(day + " " + time_slot, '%m-%d-%Y %H:%M%p'))
+        appointment_time = time.mktime(time.strptime(day + " " + time_slot, '%m-%d-%Y %H:%M'))
 
         # Here, check if the slot is already booked.
         existing_appointment = mongo.db.appointments.find_one({"timestamp": appointment_time, "doctor_id": ObjectId(doc_id)})
@@ -453,3 +456,33 @@ def schedule(doc_id):
         mongo.db.appointments.insert_one(appointment)
         flash('Appointment scheduled successfully!', 'success')
         return redirect(url_for('profile'))
+
+@app.route("/appointment/<doc_id>")
+def get_timeslots(doc_id):
+    user = mongo.db.users.find_one({"_id": ObjectId(doc_id)})
+    if not user:
+        return jsonify({"error": "Doctor not found."}), 404
+    doctor = user['payload']
+    doctor_obj = Doctor(**doctor)
+    time_slots = doctor_obj.get_time_slots()
+
+    # Check the already booked slots for the doctor
+    booked_appointments = mongo.db.appointments.find({"doctor_id": ObjectId(doc_id)})
+    booked_times = [appointment["timestamp"] for appointment in booked_appointments]
+
+    # Convert the time_slots to the format that FullCalendar expects
+    fullcalendar_events = []
+    for slot in time_slots:
+        start_time = time.mktime(time.strptime(slot["day"] + " " + slot["start"], '%m-%d-%Y %H:%M'))
+        end_time = time.mktime(time.strptime(slot["day"] + " " + slot["end"], '%m-%d-%Y %H:%M'))
+
+        # If slot is not booked, add to fullcalendar events
+        if start_time not in booked_times:
+            event = {
+                "title": "Available",
+                "start": datetime.fromtimestamp(start_time).isoformat(),
+                "end": datetime.fromtimestamp(end_time).isoformat()
+            }
+            fullcalendar_events.append(event)
+
+    return jsonify(fullcalendar_events)
