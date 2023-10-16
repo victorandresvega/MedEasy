@@ -83,10 +83,15 @@ class Doctor:
         clock_out = datetime.strptime(self.schedule["clock_out"], '%H:%M')
         
         while clock_in <= clock_out:
-            slots.append(clock_in.strftime('%H:%M'))
+            slots.append({
+                "start": clock_in.strftime('%H:%M'),
+                # If you also want to define an end time for each slot:
+                "end": (clock_in + timedelta(minutes=30)).strftime('%H:%M')
+            })
             clock_in += timedelta(minutes=30)
         
         return slots
+
     
     def day_to_fullcalendar_format(day):
         mapping = {

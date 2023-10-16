@@ -20,6 +20,8 @@
 
     <script src= "https://cdn.jsdelivr.net/npm/fullcalendar@5.9.0/main.min.js"></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.9.0/locales/es.js"></script>
+
     <link rel="stylesheet" href="../static/css/style.css" />
     <title>Citas</title>
 
@@ -192,42 +194,109 @@
       });
     </script>
 
-    <!-- Script for Calendr-->
+    <!--FullCalendar JS-->
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var calendarEl = document.getElementById('calendar');
+    document.addEventListener('DOMContentLoaded', function () {
+        var calendarEl = document.getElementById('calendar');
 
-            var calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'timeGridWeek',
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridDay',
-                },
-                navLinks: true,
-                selectable: true,
-                selectMirror: true,
-                dayMaxEvents: true,
-                eventColor: 'green',
-                allDaySlot: false,
-                slotMinTime: '{{ clock_in_24 }}',
-                slotMaxTime: '{{ clock_out_24 }}',
-                hiddenDays: [0, 1, 2, 3, 4, 5, 6].filter(day => !{{ work_days|tojson }}.includes(day)),
-                select: function(info) {
-                    // Add logic here for what happens when a time slot is selected
-                    alert('Selected time: ' + info.startStr + ' to ' + info.endStr);
+        // Get today's date
+        var today = new Date();
+        today.setHours(0, 0, 0, 0); // Set to start of the day
+
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth',
+            },
+            navLinks: true,
+            selectable: true,
+            selectMirror: true,
+            dayMaxEvents: true,
+            eventColor: 'green',
+            allDaySlot: false,
+            slotMinTime: '{{ clock_in_24 }}',
+            slotMaxTime: '{{ clock_out_24 }}',
+            hiddenDays: [0, 1, 2, 3, 4, 5, 6].filter(day => !{{ work_days|tojson }}.includes(day)),
+
+            buttonText: {
+                today: 'Hoy',
+                month: 'Mes',
+            },
+
+            locale: 'es',
+
+            validRange: {
+            start: today // Disallow dates before today
+        },
+
+            dateClick: function(info) {
+                calendar.changeView('timeGridDay', info.dateStr); 
+            },
+            select: function(info) {
+                if (calendar.view.type === 'timeGridDay') {
+                    // Format the date and time
+                    const selectedDate = new Date(info.startStr);
+                    const formattedDate = selectedDate.toLocaleDateString();
+                    const formattedTime = selectedDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+                    // Ask for confirmation
+                    const isConfirmed = confirm(`Desea sacar su cita para el dia: ${formattedDate} a las ${formattedTime}?`);
+
+                    if (isConfirmed) {
+                        // Convert the selected date and time to epoch timestamp
+                        const selectedEpoch = selectedDate.getTime() / 1000;
+
+                        // Send the data to the server to store the appointment
+                        fetch("/create_appointment", {
+                            method: "POST",
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                selectedEpoch: selectedEpoch,
+                                doc_id: '{{ doc_id }}'
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Add the event to the calendar
+                                calendar.addEvent({
+                                    id: data.eventId,
+                                    start: new Date(info.startStr),
+                                    end: new Date(info.endStr),
+                                    color: 'red',
+                                    editable: false,
+                                    selectable: false
+                                });
+                                alert(data.message);
+                            } else {
+                                alert(data.message);
+                            }
+                        });
+                    }
                 }
+            }
+        });
+
+        calendar.render();
+
+        // Fetch and add booked slots to the calendar
+        fetch('/schedule_events/{{ doc_id }}')
+            .then(response => response.json())
+            .then(events => {
+                events.forEach(event => {
+                    if (event.color === "red") {
+                        event.editable = false; 
+                        event.selectable = false;
+                    }
+                });
+                calendar.addEventSource(events);
             });
 
-            calendar.render();
-
-            // Fetch and add booked slots to the calendar
-            fetch('/schedule_events/{{ doc_id }}')
-                .then(response => response.json())
-                .then(events => {
-                    calendar.addEventSource(events);
-                });
-        });
+    });
     </script>
   </body>
 </html>

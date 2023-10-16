@@ -417,14 +417,15 @@ def epoch_to_human_readable(epoch_time):
     return datetime.fromtimestamp(epoch_time).strftime('%I:%M %p')
 
 @app.template_filter('time')
-def time_filter(s, format='%H:%M'):
-    if s is None:
+def time_filter(epoch_time, format='%H:%M'):
+    if epoch_time is None:
         return 'N/A'
     try:
-        time_obj = datetime.strptime(s, '%H:%M')
-        return time_obj.strftime(format)
+        dt_object = datetime.fromtimestamp(epoch_time)
+        return dt_object.strftime(format)
     except Exception as e:
-        return s  # Return the original string if there's an error in conversion
+        return str(e) 
+
 
 def convert_to_24h(time_str):
     """ Convert time from 12 hour format (with AM/PM) to 24 hour format """
@@ -471,12 +472,12 @@ def schedule(doc_id):
         patient_id = session.get('_id', None)
 
         if not patient_id:
-            return jsonify({"success": False, "message": "You need to be logged in to schedule an appointment."})
+            return jsonify({"success": False, "message": "Por favor inicie session."})
 
         # Check if the slot is already booked.
         existing_appointment = mongo.db.appointments.find_one({"timestamp": selectedEpoch, "doctor_id": ObjectId(doc_id)})
         if existing_appointment:
-            return jsonify({"success": False, "message": "The slot is already booked. Please choose another slot."})
+            return jsonify({"success": False, "message": "Este espacio de cita ya ha sido ocupado. Por favor intente otro espacio."})
 
         # Otherwise, create the appointment.
         appointment = {
@@ -486,7 +487,7 @@ def schedule(doc_id):
         }
 
         mongo.db.appointments.insert_one(appointment)
-        return jsonify({"success": True, "message": "Appointment scheduled successfully!"})  
+        return jsonify({"success": True, "message": "Su cita ha sido procesada!"})  
 
         
     time_slots = get_timeslots_for_fullcalendar(Doctor)
@@ -504,19 +505,24 @@ def schedule(doc_id):
 def get_timeslots_for_fullcalendar(doctor_obj):
     time_slots = doctor_obj.get_time_slots()
     formatted_slots = []
-    
+
     for slot in time_slots:
-        start_time = datetime.strptime(slot["start"], "%H:%M").isoformat() # Using 24-hour format
+        if "day" not in slot:  # Error handling
+            flash(f"Error: 'day' key not found in slot: {slot}")
+            continue  # Skip to the next slot
+
+        start_time = datetime.strptime(slot["start"], "%H:%M").isoformat()  # Using 24-hour format
         end_time = datetime.strptime(slot["end"], "%H:%M").isoformat()  # Using 24-hour format
 
         formatted_slots.append({
             "title": "Available",
-            "start": slot["day"] + "T" + start_time,
-            "end": slot["day"] + "T" + end_time,
+            "start": slot.get("day", "DEFAULT_DAY") + "T" + start_time,  # Using .get() method with default value
+            "end": slot.get("day", "DEFAULT_DAY") + "T" + end_time,  # Using .get() method with default value
             "color": "green"
         })
 
     return formatted_slots
+
 
 @app.route('/schedule_events/<doc_id>', methods=['GET'])
 def schedule_events(doc_id):
@@ -538,8 +544,6 @@ def schedule_events(doc_id):
 
     time_slots = get_timeslots_for_fullcalendar(doctor_obj)
     
-    time_slots = get_timeslots_for_fullcalendar(Doctor)
-
     # Get the current date
     current_date = datetime.now().strftime('%Y-%m-%d')
     
@@ -547,4 +551,39 @@ def schedule_events(doc_id):
     booked_appointments = mongo.db.appointments.find({"doctor_id": ObjectId(doc_id), "timestamp": {"$gt": current_date}})
     booked_times = [{"title": "Booked", "start": datetime.fromtimestamp(appointment["timestamp"]).isoformat(), "color": "red"} for appointment in booked_appointments]
 
-    return jsonify(time_slots + booked_times)
+    # Logic to find unavailable slots
+    # First, list all possible slots for the doctor based on his schedule
+    all_possible_slots = get_timeslots_for_fullcalendar(doctor_obj) 
+
+    # Next, identify the unavailable slots by subtracting the booked slots from all possible slots
+    booked_start_times = [slot["start"] for slot in booked_times]
+    available_slots = [slot for slot in all_possible_slots if slot["start"] not in booked_start_times]
+
+    return jsonify(available_slots + booked_times)
+
+
+@app.route('/create_appointment', methods=['POST'])
+def create_appointment():
+    data = request.json
+    selectedEpoch = data['selectedEpoch']
+    doc_id = data['doc_id']
+    patient_id = session.get('_id', None)
+    
+    # Ensure the patient is logged in
+    if not patient_id:
+        return jsonify({"success": False, "message": "Debe iniciar session como paciente para acceder."})
+
+    # Check if the slot is already booked
+    existing_appointment = mongo.db.appointments.find_one({"timestamp": selectedEpoch, "doctor_id": ObjectId(doc_id)})
+    if existing_appointment:
+        return jsonify({"success": False, "message": "Este espacio ya fue citado. Por favor elija otro espacio."})
+
+    # Otherwise, create the appointment
+    appointment = {
+        "doctor_id": ObjectId(doc_id),
+        "patient_id": ObjectId(patient_id),
+        "timestamp": selectedEpoch
+    }
+    
+    mongo.db.appointments.insert_one(appointment)
+    return jsonify({"success": True, "message": "Su cita fue procesada exitosamente!"})
