@@ -125,11 +125,11 @@
             </div>
             <div class="flex justify-between items-center mb-4">
                 <p class="font-medium text-lg">Hora de Entrada:</p>
-                <p>{{ doctor.schedule.clock_in|time|default('N/A') }}</p>
+                <p>{{ clock_in_time|default('N/A') }}</p>
             </div>
             <div class="flex justify-between items-center">
                 <p class="font-medium text-lg">Hora de Salida:</p>
-                <p>{{ doctor.schedule.clock_out|time|default('N/A') }}</p>
+                <p>{{ clock_out_time|default('N/A') }}</p>
             </div>
         </div>
 

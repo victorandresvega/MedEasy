@@ -173,16 +173,17 @@
     <!-- Script to handle un-registered users. -->
     <script>
     const doctors = document.querySelectorAll('.doctor-link');
-    
+        
     doctors.forEach(doc => {
         doc.addEventListener('click', function(e) {
-            {% if not logged_in %}
+            {% if not logged_in or user_role != 'patient' %}
                 e.preventDefault();  // Stop the regular link behavior
-                alert('Por favor inicie session para por sacar una cita.');
+                alert('Por favor inicie session como paciente para sacar una cita.');
             {% endif %}
         });
     });
-</script>
+    </script>
+
 
   </body>
 </html>

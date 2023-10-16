@@ -1,16 +1,18 @@
-import hashlib
-import time
 import re
 from datetime import datetime, timedelta
 
-
 class Doctor:
-    # TODO Consider moving to new class (class Constants or class Data)
-    medicalSpecialties = sorted({'Cardiólogo', 'Dermatólogo', 'Alergista', 'Generalista', 'Pediatra', 'Ortopeda', 'Oftalmólogo', 'Radiólogo'})
+    medicalSpecialties = sorted({
+        'Cardiólogo', 'Dermatólogo', 'Alergista', 'Generalista',
+        'Pediatra', 'Ortopeda', 'Oftalmólogo', 'Radiólogo'
+    })
+
+    medicalCoverages = sorted({
+        'Triple-S Salud', 'Molina Healthcare of Puerto Rico',
+        'MMM (Medicare y Mucho Más)', 'PMC Medicare Choice','Humana'
+    })
     
-    medicalCoverages = sorted({'Triple-S Salud', 'Molina Healthcare of Puerto Rico', 'MMM (Medicare y Mucho Más)', 'PMC Medicare Choice','Humana'})
-    
-    daysWeek = [ "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo" ]
+    daysWeek = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 
     def __init__(self, first_name, last_name, specialties, address, medical_coverages, phone_number, photo, schedule=None):
         self.first_name = self.valid_first_name(first_name)
@@ -76,30 +78,31 @@ class Doctor:
         return result
     
     def get_time_slots(self):
-        """Generate time slots every 30 minutes between clock_in and clock_out."""
-        time_format = "%H:%M"
+        slots = []
+        clock_in = datetime.strptime(self.schedule["clock_in"], '%H:%M')
+        clock_out = datetime.strptime(self.schedule["clock_out"], '%H:%M')
         
-        clock_in_str = str(self.schedule['clock_in'])
-        clock_out_str = str(self.schedule['clock_out'])
-
-        # Convert epoch string to datetime object
-        clock_in_time = datetime.fromtimestamp(float(clock_in_str))
-        clock_out_time = datetime.fromtimestamp(float(clock_out_str))
-
-        # Extract only the hour and minute from the datetime object
-        clock_in_time = datetime.strptime(clock_in_time.strftime(time_format), time_format)
-        clock_out_time = datetime.strptime(clock_out_time.strftime(time_format), time_format)
-
-        time_slots = []
-        current_time = clock_in_time
-
-        while current_time < clock_out_time:
-            time_slots.append(current_time.strftime(time_format))
-            current_time += timedelta(minutes=30)
-
-        return time_slots
-
+        while clock_in <= clock_out:
+            slots.append(clock_in.strftime('%H:%M'))
+            clock_in += timedelta(minutes=30)
+        
+        return slots
     
+    def day_to_fullcalendar_format(day):
+        mapping = {
+            'Domingo': 0,
+            'Lunes': 1,
+            'Martes': 2,
+            'Miércoles': 3,
+            'Jueves': 4,
+            'Viernes': 5,
+            'Sábado': 6,
+        }
+        return mapping.get(day, -1)
+
+
+
+
     # --------------------------------------------------------------------------
 
     # TODO review all validations

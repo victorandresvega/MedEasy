@@ -127,12 +127,13 @@
                     </div>
                     <div class="flex justify-between items-center mb-4">
                         <p class="font-medium text-lg"><strong>Hora de Entrada:</strong></p>
-                        <p>{{ doctor.schedule.clock_in|time|default('N/A') }}</p>
+                        <p>{{ clock_in_AmPm|default('N/A') }}</p>
                     </div>
                     <div class="flex justify-between items-center">
                         <p class="font-medium text-lg"><strong>Hora de Salida:</strong></p>
-                        <p>{{ doctor.schedule.clock_out|time|default('N/A') }}</p>
+                        <p>{{ clock_out_AmPm|default('N/A') }}</p>
                     </div>
+
                 </div>
             </div>
 
@@ -142,7 +143,7 @@
 
         <!-- Calendar for Available Slots -->
         <div class="w-1/2 p-8 bg-white shadow-md rounded-md flex flex-col items-center">
-            <p class="font-medium text-lg mb-4 w-full text-left"><strong>Seleccione un espacio:</strong></p>
+            <p class="font-medium text-lg mb-4 w-full text-center text-2xl"><strong>Seleccione un espacio</strong></p>
             <div id="calendar" class="w-full"></div>
             <button
                 id="bookAppointment"
@@ -193,69 +194,40 @@
 
     <!-- Script for Calendr-->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-    var calendarEl = document.getElementById('calendar');
+        document.addEventListener('DOMContentLoaded', function () {
+            var calendarEl = document.getElementById('calendar');
 
-    var calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'timeGridWeek',
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
-        },
-        expandRows: true,
-        navLinks: true,
-        selectable: true,
-        selectMirror: true,
-        dayMaxEvents: true,
-        weekends: {% if "Saturday" in doctor.schedule.work_days or "Sunday" in doctor.schedule.work_days %} true {% else %} false {% endif %},
-        businessHours: {
-            daysOfWeek: {{ doctor.schedule.work_days|tojson|replace("Sunday", "0")|replace("Monday", "1")|replace("Tuesday", "2")|replace("Wednesday", "3")|replace("Thursday", "4")|replace("Friday", "5")|replace("Saturday", "6") }},
-            startTime: "{{ doctor.schedule.clock_in|time|default('08:00') }}",
-            endTime: "{{ doctor.schedule.clock_out|time|default('18:00') }}",
-        },
-        select: function(info) {
-            let selectedStartTime = info.startStr.split('T')[1];
-            let selectedEndTime = info.endStr.split('T')[1];
-
-            let availableSlots = []; 
-
-            if (availableSlots.includes(selectedStartTime)) {
-                if (confirm('Do you want to book the appointment at ' + selectedStartTime + ' to ' + selectedEndTime + '?')) {
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'timeGridWeek',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridDay',
+                },
+                navLinks: true,
+                selectable: true,
+                selectMirror: true,
+                dayMaxEvents: true,
+                eventColor: 'green',
+                allDaySlot: false,
+                slotMinTime: '{{ clock_in_24 }}',
+                slotMaxTime: '{{ clock_out_24 }}',
+                hiddenDays: [0, 1, 2, 3, 4, 5, 6].filter(day => !{{ work_days|tojson }}.includes(day)),
+                select: function(info) {
+                    // Add logic here for what happens when a time slot is selected
+                    alert('Selected time: ' + info.startStr + ' to ' + info.endStr);
                 }
-            } else {
-                alert('This slot is not available. Please select another slot.');
-            }
-        },
-        events: function(fetchInfo, successCallback, failureCallback) {
-            let doctorId = "YOUR_DOCTOR_ID"; // Replace this with the actual way you retrieve the doctor's ID
-            let events = [];
-            let work_days = {{ doctor.schedule.work_days|default([])|tojson }};
-            let clock_in = "{{ doctor.schedule.clock_in|time|default('N/A') }}";
-            let clock_out = "{{ doctor.schedule.clock_out|time|default('N/A') }}";
+            });
 
-            let start_date = new Date(fetchInfo.startStr);
-            let end_date = new Date(fetchInfo.endStr);
+            calendar.render();
 
-            while (start_date <= end_date) {
-                if (work_days.includes(start_date.toLocaleDateString('en-US', { weekday: 'long' }))) {
-                    events.push({
-                        title: 'Available',
-                        start: new Date(start_date.toDateString() + " " + clock_in),
-                        end: new Date(start_date.toDateString() + " " + clock_out),
-                        color: 'green'
-                    });
-                }
-                start_date.setDate(start_date.getDate() + 1);
-            }
-            successCallback(events);
-        }
-    });
-
-    calendar.render();
-});
-
+            // Fetch and add booked slots to the calendar
+            fetch('/schedule_events/{{ doc_id }}')
+                .then(response => response.json())
+                .then(events => {
+                    calendar.addEventSource(events);
+                });
+        });
     </script>
-
   </body>
 </html>

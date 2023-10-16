@@ -49,7 +49,9 @@ def home():
         users = Doctor.get_filtered_doctors(mongo.db, specialty, name)
         
     logged_in = "_id" in session
-    return render_template('home.html', users=users, specialties=specialties, logged_in=logged_in)
+    user_role = session.get('user_role', None)
+    return render_template('home.html', users=users, specialties=specialties, logged_in=logged_in, user_role=user_role)
+
 
 @app.route("/about")
 def about():
@@ -118,17 +120,10 @@ def signupPOST():
         schedule = {}
         schedule["work_days"] = request.form.getlist('work_days[]')
 
-        # Convert clock_in and clock_out into epoch
-        current_date = time.strftime('%Y-%m-%d')  # Getting the current date
-        
-        clock_in_combined = current_date + ' ' + request.form.get('clock_in')
-        clock_out_combined = current_date + ' ' + request.form.get('clock_out')
-        
-        clock_in_time = time.mktime(time.strptime(clock_in_combined, '%Y-%m-%d %H:%M'))
-        clock_out_time = time.mktime(time.strptime(clock_out_combined, '%Y-%m-%d %H:%M'))
-        
-        schedule["clock_in"] = clock_in_time
-        schedule["clock_out"] = clock_out_time
+        # Convert clock_in and clock_out values to HH:MM format
+        schedule["clock_in"] = convert_to_24h(request.form.get('clock_in'))
+        schedule["clock_out"] = convert_to_24h(request.form.get('clock_out'))
+
         
         payload["schedule"] = schedule  # Add schedule to the payload
 
@@ -143,8 +138,6 @@ def signupPOST():
 
         payload["photo"] = encoded_photo
 
-
-
     # Create the user with the above payload
     created_user = User.create_user(
         bcrypt, email=email, password=password, role=account_type, payload=payload, database=mongo.db)
@@ -153,6 +146,14 @@ def signupPOST():
     session['user_role'] = account_type
     flash('Account created!', 'success')
     return redirect(url_for('home'))
+
+def convert_to_24h(time_str):
+    """ Convert time from 12 hour format (with AM/PM) to 24 hour format """
+    try:
+        time_obj = datetime.strptime(time_str, '%I:%M %p')
+        return time_obj.strftime('%H:%M')
+    except:
+        return time_str
 
 
 @app.route('/signout')
@@ -225,10 +226,14 @@ def profile():
             else:
                 photo_data = Photo.encodeImage("https://freesvg.org/img/abstract-user-flat-4.png")
 
-            if 'schedule' not in user.payload:
-                user.payload['schedule'] = {"work_days": [], "clock_in": None, "clock_out": None}
+        if 'schedule' not in user.payload:
+            user.payload['schedule'] = {"work_days": [], "clock_in": "00:00", "clock_out": "00:00"}
 
-            return render_template('doctor.html', doctor_email=user, doctor=user.payload, photo=photo_data)
+        # Get clock_in and clock_out values directly from the payload
+        clock_in_time = convert_to_am_pm(user.payload['schedule'].get('clock_in', '00:00'))
+        clock_out_time = convert_to_am_pm(user.payload['schedule'].get('clock_out', '00:00'))
+
+        return render_template('doctor.html', doctor_email=user, doctor=user.payload, photo=photo_data, clock_in_time=clock_in_time, clock_out_time=clock_out_time)
 
 
 
@@ -269,6 +274,23 @@ def helper_getValList(field_name, form, payload):
         return payload[field_name]
     return form.getlist(field_name)
 
+def convert_to_am_pm(time_str):
+    """ Convert time from 24-hour format to 12 hour format with AM/PM """
+    try:
+        time_obj = datetime.strptime(time_str, '%H:%M')
+        return time_obj.strftime('%I:%M %p')
+    except Exception as e:
+        return time_str  # Return the original string if there's an error in conversion
+
+def convert_to_24h(time_str):
+    """ Convert time from 12 hour format (with AM/PM) to 24 hour format """
+    try:
+        time_obj = datetime.strptime(time_str, '%I:%M %p')
+        return time_obj.strftime('%H:%M')
+    except:
+        return time_str
+
+
 @app.route('/profile/edit', methods=['GET', 'POST'])
 def edit_profile():
     user_id = session.get('_id', None)
@@ -283,7 +305,14 @@ def edit_profile():
         return redirect(url_for('home'))
 
     if user.role == "doctor":
-        current_date = time.strftime('%Y-%m-%d')  # Fetch the current date once at the start
+        
+        # Check if scheduling values are missing and set them to default values
+        if 'schedule' not in user.payload:
+            user.payload['schedule'] = {
+                "work_days": [],           # Default: empty list for work days
+                "clock_in": "09:00",       # Default clock in: 9:00 AM
+                "clock_out": "17:00"       # Default clock out: 5:00 PM
+            }
         
         if request.method == 'POST':
             email = request.form.get('email', user.email)
@@ -294,13 +323,9 @@ def edit_profile():
             specialties = helper_getValList('specialties[]', request.form, user.payload)
             medical_coverages = helper_getValList('medical_coverages[]', request.form, user.payload)
             
-            clock_in_time_str = request.form.get('clock_in')
-            clock_out_time_str = request.form.get('clock_out')
-
-
-            clock_in_time = time_to_epoch(current_date, clock_in_time_str)
-            clock_out_time = time_to_epoch(current_date, clock_out_time_str)
-
+            # Get clock_in and clock_out values directly from the payload
+            clock_in_time = convert_to_24h(request.form.get('clock_in'))
+            clock_out_time = convert_to_24h(request.form.get('clock_out'))
 
             work_days = request.form.getlist('work_days[]')
 
@@ -342,18 +367,9 @@ def edit_profile():
             return redirect(url_for('profile'))
 
         else:
-            clock_in_value = user.payload.get('schedule', {}).get('clock_in', None)
-            clock_out_value = user.payload.get('schedule', {}).get('clock_out', None)
-            
-            if clock_in_value is not None:
-                clock_in_time = epoch_to_human_readable(clock_in_value)
-            else:
-                clock_in_time = '00:00'
-                            
-            if clock_out_value is not None:
-                clock_out_time = epoch_to_human_readable(clock_out_value)
-            else:
-                clock_out_time = '00:00'
+            # Convert clock_in and clock_out values to HH:MM format
+            clock_in_time = convert_to_24h(request.form.get('clock_in', user.payload.get('schedule', {}).get('clock_in', '00:00')))
+            clock_out_time = convert_to_24h(request.form.get('clock_out', user.payload.get('schedule', {}).get('clock_out', '00:00')))
 
 
         return render_template('editDoctor.html', doctor_email=user, doctor=user.payload,
@@ -401,88 +417,134 @@ def epoch_to_human_readable(epoch_time):
     return datetime.fromtimestamp(epoch_time).strftime('%I:%M %p')
 
 @app.template_filter('time')
-def time_filter(s, format="%I:%M %p"):
+def time_filter(s, format='%H:%M'):
     if s is None:
         return 'N/A'
-    return epoch_to_human_readable(s)
+    try:
+        time_obj = datetime.strptime(s, '%H:%M')
+        return time_obj.strftime(format)
+    except Exception as e:
+        return s  # Return the original string if there's an error in conversion
+
+def convert_to_24h(time_str):
+    """ Convert time from 12 hour format (with AM/PM) to 24 hour format """
+    try:
+        time_obj = datetime.strptime(time_str, '%I:%M %p')
+        return time_obj.strftime('%H:%M')
+    except:
+        return time_str
 
 
 @app.route("/schedule/<doc_id>", methods=["GET", "POST"])
 def schedule(doc_id):
     user = mongo.db.users.find_one({"_id": ObjectId(doc_id)})
-    
     if not user:
         flash('Doctor not found.', 'danger')
         return redirect(url_for('home'))
 
-    doctor = user['payload']
-    medical_plans = doctor['medical_coverages']
-    doctor_name = doctor['first_name'] + " " + doctor['last_name']
-    doctor_image = doctor.get('photo', None)
-    specialties = doctor['specialties']
-    address = doctor['address']
-    phone = doctor['phone_number']
-    doctor_obj = Doctor(**doctor)
-    time_slots = doctor_obj.get_time_slots()
+    doctor_data = user['payload']
+    doctor_instance = Doctor(
+        doctor_data['first_name'],
+        doctor_data['last_name'],
+        doctor_data['specialties'],
+        doctor_data['address'],
+        doctor_data['medical_coverages'],
+        doctor_data['phone_number'],
+        doctor_data.get('photo'),
+        doctor_data.get('schedule')
+    )
+
+    time_slots = doctor_instance.get_time_slots()
 
     if request.method == "GET":
-        return render_template("scheduling.html", doctor=doctor, time_slots=time_slots)
+        clock_in_AmPm = convert_to_am_pm(doctor_data.get('schedule', {}).get('clock_in', '00:00'))
+        clock_out_AmPm = convert_to_am_pm(doctor_data.get('schedule', {}).get('clock_out', '00:00'))
+        clock_in_24 = convert_to_24h(doctor_data.get('schedule', {}).get('clock_in', '00:00'))
+        clock_out_24 = convert_to_24h(doctor_data.get('schedule', {}).get('clock_out', '00:00'))
+        work_days = [Doctor.day_to_fullcalendar_format(day) for day in  user['payload']['schedule'].get('work_days', [])]
+        
+        
+        return render_template("scheduling.html", doctor=doctor_data, time_slots=time_slots, clock_in_AmPm=clock_in_AmPm, clock_out_AmPm=clock_out_AmPm, clock_in_24=clock_in_24, clock_out_24=clock_out_24, work_days=work_days, doc_id=doc_id )
 
     elif request.method == "POST":
-        day = str(request.form.get('day'))
-        time_slot = request.form.get('time_slot') 
+        selectedEpoch = request.json['selectedEpoch']
         patient_id = session.get('_id', None)
 
         if not patient_id:
-            flash('You need to be logged in to schedule an appointment.', 'danger')
-            return redirect(url_for('signinGET'))
+            return jsonify({"success": False, "message": "You need to be logged in to schedule an appointment."})
 
-        # Convert the day and time_slot into epoch timestamp
-        appointment_time = time.mktime(time.strptime(day + " " + time_slot, '%m-%d-%Y %H:%M'))
-
-        # Here, check if the slot is already booked.
-        existing_appointment = mongo.db.appointments.find_one({"timestamp": appointment_time, "doctor_id": ObjectId(doc_id)})
+        # Check if the slot is already booked.
+        existing_appointment = mongo.db.appointments.find_one({"timestamp": selectedEpoch, "doctor_id": ObjectId(doc_id)})
         if existing_appointment:
-            flash('The slot is already booked. Please choose another slot.', 'danger')
-            return redirect(url_for('schedule', doc_id=doc_id))
+            return jsonify({"success": False, "message": "The slot is already booked. Please choose another slot."})
 
         # Otherwise, create the appointment.
         appointment = {
             "doctor_id": ObjectId(doc_id),
             "patient_id": ObjectId(patient_id),
-            "timestamp": appointment_time
+            "timestamp": selectedEpoch
         }
 
         mongo.db.appointments.insert_one(appointment)
-        flash('Appointment scheduled successfully!', 'success')
-        return redirect(url_for('profile'))
+        return jsonify({"success": True, "message": "Appointment scheduled successfully!"})  
 
-@app.route("/appointment/<doc_id>")
-def get_timeslots(doc_id):
-    user = mongo.db.users.find_one({"_id": ObjectId(doc_id)})
-    if not user:
-        return jsonify({"error": "Doctor not found."}), 404
-    doctor = user['payload']
-    doctor_obj = Doctor(**doctor)
+        
+    time_slots = get_timeslots_for_fullcalendar(Doctor)
+    # Get the current date
+    current_date = datetime.now().strftime('%Y-%m-%d')
+    
+    # Check the already booked slots for the doctor from today onwards
+    booked_appointments = mongo.db.appointments.find({"doctor_id": ObjectId(doc_id), "timestamp": {"$gt": current_date}})
+    booked_times = [{"title": "Booked", "start": datetime.fromtimestamp(appointment["timestamp"]).isoformat(), "color": "red"} for appointment in booked_appointments]
+
+    return jsonify(time_slots + booked_times)
+
+
+
+def get_timeslots_for_fullcalendar(doctor_obj):
     time_slots = doctor_obj.get_time_slots()
-
-    # Check the already booked slots for the doctor
-    booked_appointments = mongo.db.appointments.find({"doctor_id": ObjectId(doc_id)})
-    booked_times = [appointment["timestamp"] for appointment in booked_appointments]
-
-    # Convert the time_slots to the format that FullCalendar expects
-    fullcalendar_events = []
+    formatted_slots = []
+    
     for slot in time_slots:
-        start_time = time.mktime(time.strptime(slot["day"] + " " + slot["start"], '%m-%d-%Y %H:%M'))
-        end_time = time.mktime(time.strptime(slot["day"] + " " + slot["end"], '%m-%d-%Y %H:%M'))
+        start_time = datetime.strptime(slot["start"], "%H:%M").isoformat() # Using 24-hour format
+        end_time = datetime.strptime(slot["end"], "%H:%M").isoformat()  # Using 24-hour format
 
-        # If slot is not booked, add to fullcalendar events
-        if start_time not in booked_times:
-            event = {
-                "title": "Available",
-                "start": datetime.fromtimestamp(start_time).isoformat(),
-                "end": datetime.fromtimestamp(end_time).isoformat()
-            }
-            fullcalendar_events.append(event)
+        formatted_slots.append({
+            "title": "Available",
+            "start": slot["day"] + "T" + start_time,
+            "end": slot["day"] + "T" + end_time,
+            "color": "green"
+        })
 
-    return jsonify(fullcalendar_events)
+    return formatted_slots
+
+@app.route('/schedule_events/<doc_id>', methods=['GET'])
+def schedule_events(doc_id):
+    doctor_data = mongo.db.users.find_one({"_id": ObjectId(doc_id), "role": "doctor"})
+    
+    if not doctor_data:
+        return jsonify({"error": "Doctor not found!"}), 404
+
+    doctor_obj = Doctor(
+        doctor_data['payload']['first_name'],
+        doctor_data['payload']['last_name'],
+        doctor_data['payload']['specialties'],
+        doctor_data['payload']['address'],
+        doctor_data['payload']['medical_coverages'],
+        doctor_data['payload']['phone_number'],
+        doctor_data['payload'].get('photo'),
+        doctor_data['payload'].get('schedule')
+    )
+
+    time_slots = get_timeslots_for_fullcalendar(doctor_obj)
+    
+    time_slots = get_timeslots_for_fullcalendar(Doctor)
+
+    # Get the current date
+    current_date = datetime.now().strftime('%Y-%m-%d')
+    
+    # Check the already booked slots for the doctor from today onwards
+    booked_appointments = mongo.db.appointments.find({"doctor_id": ObjectId(doc_id), "timestamp": {"$gt": current_date}})
+    booked_times = [{"title": "Booked", "start": datetime.fromtimestamp(appointment["timestamp"]).isoformat(), "color": "red"} for appointment in booked_appointments]
+
+    return jsonify(time_slots + booked_times)
