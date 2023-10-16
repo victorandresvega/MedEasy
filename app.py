@@ -13,7 +13,7 @@ from photo import Photo
 from user import User
 from dotenv import load_dotenv
 from bson import ObjectId
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 
@@ -526,40 +526,22 @@ def get_timeslots_for_fullcalendar(doctor_obj):
 
 @app.route('/schedule_events/<doc_id>', methods=['GET'])
 def schedule_events(doc_id):
-    doctor_data = mongo.db.users.find_one({"_id": ObjectId(doc_id), "role": "doctor"})
-    
-    if not doctor_data:
-        return jsonify({"error": "Doctor not found!"}), 404
+    # First, let's fetch all the appointments of the doctor.
+    appointments = mongo.db.appointments.find({"doctor_id": ObjectId(doc_id)})
+    events = []
 
-    doctor_obj = Doctor(
-        doctor_data['payload']['first_name'],
-        doctor_data['payload']['last_name'],
-        doctor_data['payload']['specialties'],
-        doctor_data['payload']['address'],
-        doctor_data['payload']['medical_coverages'],
-        doctor_data['payload']['phone_number'],
-        doctor_data['payload'].get('photo'),
-        doctor_data['payload'].get('schedule')
-    )
+    for appt in appointments:
+        start_time = datetime.fromtimestamp(appt["timestamp"])
+        end_time = start_time + timedelta(minutes=30) 
+        event = {
+            "start": start_time.isoformat(),
+            "end": end_time.isoformat(),
+            "color": "red",  # marking it as unavailable
+            "title": "Ocupado"
+        }
+        events.append(event)
 
-    time_slots = get_timeslots_for_fullcalendar(doctor_obj)
-    
-    # Get the current date
-    current_date = datetime.now().strftime('%Y-%m-%d')
-    
-    # Check the already booked slots for the doctor from today onwards
-    booked_appointments = mongo.db.appointments.find({"doctor_id": ObjectId(doc_id), "timestamp": {"$gt": current_date}})
-    booked_times = [{"title": "Booked", "start": datetime.fromtimestamp(appointment["timestamp"]).isoformat(), "color": "red"} for appointment in booked_appointments]
-
-    # Logic to find unavailable slots
-    # First, list all possible slots for the doctor based on his schedule
-    all_possible_slots = get_timeslots_for_fullcalendar(doctor_obj) 
-
-    # Next, identify the unavailable slots by subtracting the booked slots from all possible slots
-    booked_start_times = [slot["start"] for slot in booked_times]
-    available_slots = [slot for slot in all_possible_slots if slot["start"] not in booked_start_times]
-
-    return jsonify(available_slots + booked_times)
+    return jsonify(events)
 
 
 @app.route('/create_appointment', methods=['POST'])
