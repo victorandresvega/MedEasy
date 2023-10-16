@@ -234,6 +234,16 @@
           start: today // Disallow dates before today
         },
 
+        eventTimeFormat: { 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            meridiem: 'short' 
+        },
+        
+        selectOverlap: function(event) {
+            return event.rendering === 'background';  // This makes it so that only slots with background rendering (the green available slots) can be selected.
+        },
+
         dateClick: function(info) {
           calendar.changeView('timeGridDay', info.dateStr); 
         },
@@ -270,11 +280,16 @@
               .then(response => response.json())
               .then(events => {
                   events.forEach(event => {
-                      if (event.color === "red") {
-                          event.editable = false; 
-                          event.selectable = false;
-                      }
-                  });
+                    if (event.color === "red") {
+                        event.editable = false; 
+                        event.selectable = false;
+
+                        // Formatting the event title to display start to end time
+                        const startTime = new Date(event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        const endTime = new Date(event.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        event.title = `${startTime}-${endTime}`;
+                    }
+                });
                   calendar.addEventSource(events);
               });
 
