@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&family=Whisper&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.15/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.9.0/main.min.css" rel="stylesheet"/>
+
+    <script src= "https://cdn.jsdelivr.net/npm/fullcalendar@5.9.0/main.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.9.0/locales/es.js"></script>
+
+    <link rel="stylesheet" href="../static/css/style.css" />
+    <title>Citas</title>
+
+  </head>
+
+  <body class="bg-gray-100 font-roboto">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-lg p-4">
+      <div class="container mx-auto flex items-center justify-between">
+        <a href="/home">
+          <img
+            class="h-10"
+            src="../static/images/MedEasy.svg"
+            alt="MedEasy logo"
+          />
+        </a>
+        <div class="space-x-4">
+          <a
+            class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded hover:bg-gray-200"
+            href="/home"
+            >Inicio</a
+          >
+          <a
+            class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded hover:bg-gray-200"
+            href="/about"
+            >Mas Informacion</a
+          >
+          {% if '_id' not in session %}
+          <a
+            class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded hover:bg-gray-200"
+            href="/signin"
+            >Iniciar/Incribirse</a
+          >
+          {% endif %} {% if '_id' in session %}
+          <!-- Profile Dropdown -->
+          <div class="relative inline-block text-left">
+            <img
+              class="h-10 w-10 rounded-full cursor-pointer"
+              src="{% if 'user_type' in session and session['user_type'] == 'doctor' and 'photo' in session and session['photo'] %}data:image/jpeg;base64,{{ session['photo'].replace('\n', '') }}{% else %}../static/img/generic-user-pfp.png{% endif %}"
+              onclick="toggleDropdown()"
+              alt="Perfil"
+            />
+            <div
+              id="profileDropdown"
+              class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 z-10"
+              style="display: none"
+            >
+              <a
+                href="/profile"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >Perfil</a
+              >
+              <a
+                href="/signout"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >Cerrar Sesion</a
+              >
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </nav>
+    <!-- Main Content -->
+    <div class="mt-10 flex justify-center">
+        <div class="w-4/5 bg-gray-100 p-6 rounded-lg shadow-lg flex">
+        <!-- Doctor's Profile, Map and Schedule Information -->
+        <div class="flex flex-col w-1/2 mr-4">
+            <!-- Doctor's Profile, Address, Phone, and Scheduling Info -->
+            <div class="p-8 bg-white shadow-md rounded-md">
+                <div class="flex items-center mb-6">
+                    <!-- Doctor's Profile -->
+                    <img
+                        src="{% if doctor.photo %}data:image/jpeg;base64,{{ doctor.photo }}{% else %}../static/img/generic-user-pfp.png{% endif %}"
+                        class="h-24 w-24 rounded-full mr-4"
+                        alt="Doctor Profile Image"
+                    />
+                    <div>
+                        <h2 class="text-2xl font-semibold">
+                            Dr. {{ doctor.first_name }} {{ doctor.last_name }}
+                        </h2>
+                        <p class="text-gray-600">
+                            {% for specialty in doctor.specialties %} {{ specialty }} {% endfor %}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <!-- Doctor's Address -->
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="font-medium text-lg"><strong>Direccion:</strong></span>
+                        <p>{{ doctor.address }}</p>
+                    </div>
+
+                    <!-- Doctor's Phone Number-->
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="font-medium text-lg"><strong>Telefono:</strong></span>
+                        <p>{{ doctor.phone_number }}</p>
+                    </div>
+
+                    <!-- Scheduling Information -->
+                    <div class="flex justify-between items-center mb-4">
+                        <p class="font-medium text-lg"><strong>Dias Disponibles:</strong></p>
+                        <p>{{ doctor.schedule.work_days|default([])|join(', ') }}</p>
+                    </div>
+                    <div class="flex justify-between items-center mb-4">
+                        <p class="font-medium text-lg"><strong>Hora de Entrada:</strong></p>
+                        <p>{{ clock_in_AmPm|default('N/A') }}</p>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <p class="font-medium text-lg"><strong>Hora de Salida:</strong></p>
+                        <p>{{ clock_out_AmPm|default('N/A') }}</p>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Google Map -->
+            <div class="mt-4 h-96 bg-gray-300 rounded-md shadow-md" id="map"></div>
+        </div>
+
+        <!-- Calendar for Available Slots -->
+        <div class="w-1/2 p-8 bg-white shadow-md rounded-md flex flex-col items-center">
+            <p class="font-medium text-lg mb-4 w-full text-center text-2xl"><strong>Seleccione un espacio</strong></p>
+            <div id="calendar" class="w-full"></div>
+            <button
+                id="bookAppointment"
+                class="mt-4 bg-blue-500 text-white px-6 py-2 rounded shadow-md hover:bg-blue-600"
+                disabled
+            >
+                Sacar Cita
+            </button>
+        </div>
+    </div>
+    </div>
+
+    <!-- JS Scripts -->
+    <script src="../static/js/script.js"></script>
+
+    <!-- Google Maps API -->
+    <script
+      async
+      defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBsJY7KojcXDneWqXV1h0J891NbgFrdglE&map_ids=122517338e1e4a8&callback=initMap"
+    ></script>
+
+    <!-- JS to handle dropdown display -->
+    <script>
+      document
+        .querySelector(".rounded-full")
+        .addEventListener("click", function () {
+          const dropdown = document.getElementById("profileDropdown");
+          dropdown.style.display =
+            dropdown.style.display === "none" ? "block" : "none";
+          event.stopPropagation();
+        });
+    </script>
+
+    <!-- Script to handle un-registered users. -->
+    <script>
+      const doctors = document.querySelectorAll('.doctor-link');
+
+      doctors.forEach(doc => {
+          doc.addEventListener('click', function(e) {
+              {% if not logged_in %}
+                  e.preventDefault();  // Stop the regular link behavior
+                  alert('Por favor inicie session para por sacar una cita.');
+              {% endif %}
+          });
+      });
+    </script>
+
+    <!--FullCalendar JS-->
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var calendarEl = document.getElementById('calendar');
+
+        // Get today's date
+        var today = new Date();
+        today.setHours(0, 0, 0, 0); // Set to start of the day
+
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth',
+            },
+            navLinks: true,
+            selectable: true,
+            selectMirror: true,
+            dayMaxEvents: true,
+            eventColor: 'green',
+            allDaySlot: false,
+            slotMinTime: '{{ clock_in_24 }}',
+            slotMaxTime: '{{ clock_out_24 }}',
+            hiddenDays: [0, 1, 2, 3, 4, 5, 6].filter(day => !{{ work_days|tojson }}.includes(day)),
+
+            buttonText: {
+                today: 'Hoy',
+                month: 'Mes',
+            },
+
+            locale: 'es',
+
+            validRange: {
+            start: today // Disallow dates before today
+        },
+
+            dateClick: function(info) {
+                calendar.changeView('timeGridDay', info.dateStr); 
+            },
+            select: function(info) {
+                if (calendar.view.type === 'timeGridDay') {
+                    // Format the date and time
+                    const selectedDate = new Date(info.startStr);
+                    const formattedDate = selectedDate.toLocaleDateString();
+                    const formattedTime = selectedDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+                    // Ask for confirmation
+                    const isConfirmed = confirm(`Desea sacar su cita para el dia: ${formattedDate} a las ${formattedTime}?`);
+
+                    if (isConfirmed) {
+                        // Convert the selected date and time to epoch timestamp
+                        const selectedEpoch = selectedDate.getTime() / 1000;
+
+                        // Send the data to the server to store the appointment
+                        fetch("/create_appointment", {
+                            method: "POST",
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                selectedEpoch: selectedEpoch,
+                                doc_id: '{{ doc_id }}'
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Add the event to the calendar
+                                calendar.addEvent({
+                                    id: data.eventId,
+                                    start: new Date(info.startStr),
+                                    end: new Date(info.endStr),
+                                    color: 'red',
+                                    editable: false,
+                                    selectable: false
+                                });
+                                alert(data.message);
+                            } else {
+                                alert(data.message);
+                            }
+                        });
+                    }
+                }
+            }
+        });
+
+        calendar.render();
+
+        // Fetch and add booked slots to the calendar
+        fetch('/schedule_events/{{ doc_id }}')
+            .then(response => response.json())
+            .then(events => {
+                events.forEach(event => {
+                    if (event.color === "red") {
+                        event.editable = false; 
+                        event.selectable = false;
+                    }
+                });
+                calendar.addEventSource(events);
+            });
+
+    });
+    </script>
+  </body>
+</html>

@@ -1,39 +1,42 @@
-import hashlib
-import time
 import re
-
+from datetime import datetime, timedelta
 
 class Doctor:
-    # TODO Consider moving to new class (class Constants or class Data)
-    medicalSpecialties = sorted({'Cardiólogo', 'Dermatólogo', 'Alergista', 'Generalista', 'Pediatra', 'Ortopeda', 'Oftalmólogo', 'Radiólogo'})
-    
-    medicalCoverages = sorted({'Triple-S Salud', 'Molina Healthcare of Puerto Rico', 'MMM (Medicare y Mucho Más)', 'PMC Medicare Choice','Humana'})
+    medicalSpecialties = sorted({
+        'Cardiólogo', 'Dermatólogo', 'Alergista', 'Generalista',
+        'Pediatra', 'Ortopeda', 'Oftalmólogo', 'Radiólogo'
+    })
 
-    def __init__(self, first_name, last_name, specialties, address, lat, lng, medical_coverages, phone_number, photo):
+    medicalCoverages = sorted({
+        'Triple-S Salud', 'Molina Healthcare of Puerto Rico',
+        'MMM (Medicare y Mucho Más)', 'PMC Medicare Choice','Humana'
+    })
+    
+    daysWeek = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+
+    def __init__(self, first_name, last_name, specialties, address, medical_coverages, phone_number, photo, schedule=None):
         self.first_name = self.valid_first_name(first_name)
         self.last_name = self.valid_last_name(last_name)
         self.address = self.valid_address(address)
         self.phone_number = self.valid_phone_number(phone_number)
         self.photo = self.valid_photo(photo)
-        self.lat = self.valid_lat(lat)
-        self.lng = self.valid_lng(lng)
-        self.specialties = self.valid_specialties(specialties)
-        self.medical_coverages = self.valid_medical_coverages(medical_coverages)
+        self.specialties = specialties
+        self.medical_coverages = medical_coverages
         self.role = 'doctor'
+        self.schedule = schedule or {"work_days": [], "clock_in": "00:00", "clock_out": "00:00"}
 
     def to_json(self):
         return {
             'first_name': self.first_name,
             'last_name': self.last_name,
             'address': self.address,
-            'lat': self.lat,
-            'lng': self.lng,
             'specialties': self.specialties,
             'medical_coverages': self.medical_coverages,
             'phone_number': self.phone_number,
             'doc_id': self.doc_id,
             'photo': self.photo,
-            'role': self.role
+            'role': self.role,
+            'schedule': self.schedule
         }
 
 # TODO REVIEW
@@ -73,7 +76,41 @@ class Doctor:
                     if spty == specialty:
                         result.append(doctor)
         return result
+    
+    def get_time_slots(self):
+        slots = []
+        clock_in = datetime.strptime(self.schedule["clock_in"], '%H:%M')
+        clock_out = datetime.strptime(self.schedule["clock_out"], '%H:%M')
+        
+        while clock_in <= clock_out:
+            slots.append({
+                "start": clock_in.strftime('%H:%M'),
+                # If you also want to define an end time for each slot:
+                "end": (clock_in + timedelta(minutes=30)).strftime('%H:%M')
+            })
+            clock_in += timedelta(minutes=30)
+        
+        return slots
 
+    
+    def day_to_fullcalendar_format(day):
+        mapping = {
+            'Domingo': 0,
+            'Lunes': 1,
+            'Martes': 2,
+            'Miércoles': 3,
+            'Jueves': 4,
+            'Viernes': 5,
+            'Sábado': 6,
+        }
+        return mapping.get(day, -1)
+
+
+
+
+    # --------------------------------------------------------------------------
+
+    # TODO review all validations
     def valid_first_name(self, first_name):
         pattern = re.compile(r"^[A-Z][a-z'-]{1,24}$")
         if not pattern.match(first_name):
@@ -122,6 +159,9 @@ class Doctor:
         if not pattern.match(photo):
             return '/static/img/generic-user-pfp.png'
         return photo
+    
+    # -------------------------------------------------------------------------
+    
     
     # TODO REVIEW
     @staticmethod

@@ -185,6 +185,29 @@
                     class="w-full p-2 border rounded-md"
                   />
                 </div>
+
+                <div class="mb-4">
+                  <label for="address">Localizacion:</label>
+                  <input
+                    type="text"
+                    id="address"
+                    name="address"
+                    required
+                    class="w-full p-2 border rounded-md"
+                  />
+                </div>
+
+                                <div class="mb-4">
+                  <label for="phone_number">Telefono:</label>
+                  <input
+                    type="tel"
+                    id="phone_number"
+                    name="phone_number"
+                    required
+                    class="w-full p-2 border rounded-md"
+                  />
+                </div>
+
                 <!-- Specialties Dropdown -->
                 <div class="dropdown mb-4 relative">
                   <label for="specialties" class="block mb-2 font-medium"
@@ -220,17 +243,6 @@
                   </div>
                 </div>
 
-                <div class="mb-4">
-                  <label for="address">Localizacion:</label>
-                  <input
-                    type="text"
-                    id="address"
-                    name="address"
-                    required
-                    class="w-full p-2 border rounded-md"
-                  />
-                </div>
-
                 <!-- Medical Coverages Dropdown -->
                 <div class="dropdown mb-4 relative">
                     <label for="medical_coverages" class="block mb-2 font-medium">Planes Medicos:</label>
@@ -249,15 +261,35 @@
                     </div>
                 </div>
 
+                <!-- Work Days Dropdown -->
+                <div class="dropdown mb-4 relative">
+                    <label for="work_days" class="block mb-2 font-medium">Días de Trabajo:</label>
+                    <button class="w-full bg-gray-200 text-left px-4 py-2 rounded border focus:outline-none focus:ring" id="dropdownButtonWorkDays">
+                        Seleccionar Días de Trabajo
+                        <span class="material-icons absolute right-3 top transform -translate-y">keyboard_arrow_down</span>
+                    </button>
+                    <div class="dropdown-menu-workdays absolute w-full mt-2 hidden border rounded bg-white shadow-md z-10">
+                        <!-- Work days checkbox options -->
+                        {% for day in work_days %}
+                        <label class="block px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                            <input type="checkbox" name="work_days[]" value="{{ day }}" class="mr-2" />
+                            {{ day }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+
+                <!-- Clock-in Time -->
                 <div class="mb-4">
-                  <label for="phone_number">Telefono:</label>
-                  <input
-                    type="tel"
-                    id="phone_number"
-                    name="phone_number"
-                    required
-                    class="w-full p-2 border rounded-md"
-                  />
+                    <label for="clock_in" class="block mb-2 font-medium">Hora de Entrada:</label>
+                    <input type="time" id="clock_in" name="clock_in" required class="w-full p-2 border rounded-md"/>
+                </div>
+
+                <!-- Clock-out Time -->
+                <div class="mb-4">
+                    <label for="clock_out" class="block mb-2 font-medium">Hora de Salida:</label>
+                    <input type="time" id="clock_out" name="clock_out" required class="w-full p-2 border rounded-md"/>
                 </div>
 
                 <div>
@@ -416,7 +448,7 @@
       });
 
       // Dropdown logic for specialties and medical coverages
-      ["Specialties", "MedicalCoverages"].forEach((type) => {
+      ["Specialties", "MedicalCoverages", "WorkDays"].forEach((type) => {
         document
           .getElementById(`dropdownButton${type}`)
           .addEventListener("click", function () {
@@ -453,7 +485,7 @@
 
       // Clicking outside of dropdowns should close them
       document.addEventListener("click", function (event) {
-        ["Specialties", "MedicalCoverages"].forEach((type) => {
+        ["Specialties", "MedicalCoverages", "WorkDays"].forEach((type) => {
           const dropdown = document.querySelector(
             `.dropdown-menu-${type.toLowerCase()}`
           );

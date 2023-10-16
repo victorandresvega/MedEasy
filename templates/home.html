@@ -120,7 +120,7 @@
       <div class="doctor-list-container">
         <div class="mt-6">
           {% for user in users %}
-          <a href="/Schedule/{{ user['_id'] }}" class="block border p-4 my-2 rounded shadow doctor-link">
+          <a href="/schedule/{{ user['_id'] }}" class="block border p-4 my-2 rounded shadow doctor-link">
               <div class="flex items-center">
                   <img
                     src="{% if user.payload['photo'] %}data:image/jpeg;base64,{{ user.payload['photo'] }}{% else %}../static/img/generic-user-pfp.png{% endif %}"
@@ -173,16 +173,17 @@
     <!-- Script to handle un-registered users. -->
     <script>
     const doctors = document.querySelectorAll('.doctor-link');
-    
+        
     doctors.forEach(doc => {
         doc.addEventListener('click', function(e) {
-            {% if not logged_in %}
+            {% if not logged_in or user_role != 'patient' %}
                 e.preventDefault();  // Stop the regular link behavior
-                alert('Please sign in to schedule an appointment.');
+                alert('Por favor inicie session como paciente para sacar una cita.');
             {% endif %}
         });
     });
-</script>
+    </script>
+
 
   </body>
 </html>
