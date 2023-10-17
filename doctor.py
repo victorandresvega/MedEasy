@@ -59,6 +59,7 @@ class Doctor:
         for doctor in doctors:
             first_name = doctor["payload"]["first_name"]
             last_name = doctor["payload"]["last_name"]
+            #Sets names to lowercase to make the search case insensitive
             if any(name.lower() in first_name.lower() or name.lower() in last_name.lower() for name in search_names):
                 result.append(doctor)
         return result
@@ -66,12 +67,9 @@ class Doctor:
     @staticmethod
     def get_filtered_doctors(database, specialty, name):
         collection = database.users
+        #Since the search matches either the first or last names in the doctors to any name used in the search,
+        #the input is split into a list first
         search_names = name.split()
-        #Regex expression to ignore case in inputted name
-        #regex_case_ignore = {"$regex": f".*{re.escape(name)}.*","$options": "i"}
-        #Pipeline to be used in the aggregate functions below. Basically looks to see if the input name matches 
-        #the first or last names of the doctors in the collection
-        #pipeline = [{"$match":{"$or":[{"payload.first_name":regex_case_ignore},{"payload.last_name":regex_case_ignore}]}}]
         if specialty == "" and name == "":
             return collection.find({"role":"doctor"})
         elif specialty == "":
