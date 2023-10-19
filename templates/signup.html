@@ -24,15 +24,12 @@
   <body class="bg-gray-100 h-screen">
     <div class="container mx-auto px-4 h-full">
       <!-- Navbar -->
-      <div class="navbar mb-10">
-        <a href="/">
-          <img
-            class="mx-auto my-8 w-32"
-            src="../static/images/MedEasy.svg"
-            alt="MedEasy logo"
-          />
-        </a>
-      </div>
+        <div class="navbar mb-10">
+            <a href="/">
+                <img class="mx-auto my-8 w-32" src="../static/img/MedEasyLogo.png" alt="MedEasy logo">
+            </a>
+        </div>
+      <!-- Form Content-->
       <div class="flex justify-center">
         <div class="bg-white w-full max-w-md rounded-lg shadow-md p-8">
           <div id="signup-form">
@@ -214,14 +211,14 @@
                     >Especialidad:</label
                   >
                   <button
-                    class="w-full bg-gray-200 text-left px-4 py-2 rounded border focus:outline-none focus:ring"
-                    id="dropdownButtonSpecialties"
+                      class="w-full bg-gray-200 text-left px-4 py-2 rounded border focus:outline-none focus:ring"
+                      id="dropdownButtonSpecialties"
                   >
-                    Seleccionar Especialidad
-                    <span
-                      class="material-icons absolute right-3 top transform -translate-y"
-                      >keyboard_arrow_down</span
-                    >
+                      <span class="selected-values">Seleccionar Especialidad</span>
+                      <span
+                          class="material-icons absolute right-3 top transform -translate-y"
+                          >keyboard_arrow_down</span
+                      >
                   </button>
                   <div
                     class="dropdown-menu-specialties absolute w-full mt-2 hidden border rounded bg-white shadow-md z-10"
@@ -246,9 +243,15 @@
                 <!-- Medical Coverages Dropdown -->
                 <div class="dropdown mb-4 relative">
                     <label for="medical_coverages" class="block mb-2 font-medium">Planes Medicos:</label>
-                    <button class="w-full bg-gray-200 text-left px-4 py-2 rounded border focus:outline-none focus:ring" id="dropdownButtonMedicalCoverages">
-                        Seleccionar Planes Medicos
-                        <span class="material-icons absolute right-3 top transform -translate-y">keyboard_arrow_down</span>
+                    <button
+                        class="w-full bg-gray-200 text-left px-4 py-2 rounded border focus:outline-none focus:ring"
+                        id="dropdownButtonMedicalCoverages"
+                    >
+                        <span class="selected-values">Seleccionar Planes Medicos</span>
+                        <span
+                            class="material-icons absolute right-3 top transform -translate-y"
+                            >keyboard_arrow_down</span
+                        >
                     </button>
                     <div class="dropdown-menu-medicalcoverages absolute w-full mt-2 hidden border rounded bg-white shadow-md z-10">
                         <!-- Medical Coverages checkbox options -->
@@ -264,10 +267,17 @@
                 <!-- Work Days Dropdown -->
                 <div class="dropdown mb-4 relative">
                     <label for="work_days" class="block mb-2 font-medium">Días de Trabajo:</label>
-                    <button class="w-full bg-gray-200 text-left px-4 py-2 rounded border focus:outline-none focus:ring" id="dropdownButtonWorkDays">
-                        Seleccionar Días de Trabajo
-                        <span class="material-icons absolute right-3 top transform -translate-y">keyboard_arrow_down</span>
+                    <button
+                        class="w-full bg-gray-200 text-left px-4 py-2 rounded border focus:outline-none focus:ring"
+                        id="dropdownButtonWorkDays"
+                    >
+                        <span class="selected-values">Seleccionar Días de Trabajo</span>
+                        <span
+                            class="material-icons absolute right-3 top transform -translate-y"
+                            >keyboard_arrow_down</span
+                        >
                     </button>
+
                     <div class="dropdown-menu-workdays absolute w-full mt-2 hidden border rounded bg-white shadow-md z-10">
                         <!-- Work days checkbox options -->
                         {% for day in work_days %}
@@ -477,8 +487,8 @@
                 selectedValues.push(cbox.parentNode.textContent.trim());
               }
             });
-            document.getElementById(`dropdownButton${type}`).textContent =
-              selectedValues.join(", ") || `Select ${type}`;
+            document.getElementById(`dropdownButton${type}`).querySelector('.selected-values').textContent = selectedValues.join(", ") || `Seleccionar ${type}`;
+
           });
         });
       });

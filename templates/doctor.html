@@ -10,15 +10,16 @@
     <title>Perfil</title>
   </head>
 <body class="bg-gray-50 font-roboto">
-<!-- Navbar -->
+    <!-- Navbar -->
     <nav class="bg-white shadow-lg p-4">
       <div class="container mx-auto flex items-center justify-between">
-        <a href="/home">
+        <a href="/home" class="flex items-center">
           <img
-            class="h-10"
-            src="../static/images/MedEasy.svg"
+            class="h-14 mr-2"
+            src="../static/img/MedEasyLogo.png"
             alt="MedEasy logo"
           />
+          <h1 class="text-4xl">edEasy</h1>
         </a>
         <div class="space-x-4">
           <a
@@ -132,12 +133,10 @@
                 <p>{{ clock_out_time|default('N/A') }}</p>
             </div>
         </div>
-
-
-
         <!-- Modify Profile Button -->
         <a href="/profile/edit" class="mt-8 bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400">Editar Perfil</a>
     </div>
+     
     <script>
     function toggleDropdown() {
         var dropdown = document.getElementById("profileDropdown");
