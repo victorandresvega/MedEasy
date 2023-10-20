@@ -328,7 +328,7 @@
                                   selectedEvent.remove();
                                   selectedEvent = null;
                               }
-
+                              location.reload();
                               // Add the event to the calendar
                               calendar.addEvent({
                                   id: data.eventId,
@@ -337,8 +337,7 @@
                                   color: 'red',
                                   editable: false,
                                   selectable: false
-                              });
-
+                              })
                               alert(data.message);
                           } else {
                               alert(data.message);

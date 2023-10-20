@@ -569,3 +569,12 @@ def create_appointment():
     
     mongo.db.appointments.insert_one(appointment)
     return jsonify({"success": True, "message": "Su cita fue procesada exitosamente!"})
+
+@app.route('/cancel_appointment/<appointment_id>', methods=['POST'])
+def cancel_appointment(appointment_id):
+    result = mongo.db.appointments.delete_one({"_id": ObjectId(appointment_id)})
+    
+    if result.deleted_count > 0:
+        return jsonify({"success": True, "message": "Cita cancelada exitosamente."})
+    else:
+        return jsonify({"success": False, "message": "No se pudo cancelar la cita."})
