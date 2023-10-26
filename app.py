@@ -182,8 +182,6 @@ def profile():
         appointment['date'] = appointment_date
         appointment['time'] = appointment_time
 
-
-
         doctor = mongo.db.users.find_one({"_id": appointment['doctor_id']})
         if doctor:
             appointment['doctor_name'] = doctor['payload'].get('first_name', '') + " " + doctor['payload'].get('last_name', '')
@@ -233,7 +231,7 @@ def profile():
         clock_in_time = convert_to_am_pm(user.payload['schedule'].get('clock_in', '00:00'))
         clock_out_time = convert_to_am_pm(user.payload['schedule'].get('clock_out', '00:00'))
 
-        return render_template('doctor.html', doctor_email=user, doctor=user.payload, photo=photo_data, clock_in_time=clock_in_time, clock_out_time=clock_out_time)
+        return render_template('doctor.html', doctor_email=user, doctor=user.payload, photo=photo_data, clock_in_time=clock_in_time, clock_out_time=clock_out_time, doc_id=user_id)
 
 
 
@@ -529,17 +527,19 @@ def schedule_events(doc_id):
     # First, let's fetch all the appointments of the doctor.
     appointments = mongo.db.appointments.find({"doctor_id": ObjectId(doc_id)})
     events = []
-
+    current_time = datetime.now()
+    
     for appt in appointments:
         start_time = datetime.fromtimestamp(appt["timestamp"])
-        end_time = start_time + timedelta(minutes=30) 
-        event = {
-            "start": start_time.isoformat(),
-            "end": end_time.isoformat(),
-            "color": "red",  # marking it as unavailable
-            "title": "Ocupado"
-        }
-        events.append(event)
+        if start_time > current_time:
+            end_time = start_time + timedelta(minutes=30)
+            event = {
+                "start": start_time.isoformat(),
+                "end": end_time.isoformat(),
+                "color": "red",  # marking it as unavailable
+                "title": "Ocupado"
+            }
+            events.append(event)
 
     return jsonify(events)
 

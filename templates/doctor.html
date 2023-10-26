@@ -7,6 +7,11 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.15/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&family=Whisper&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.9.0/main.min.css" rel="stylesheet"/>
+
+    <script src= "https://cdn.jsdelivr.net/npm/fullcalendar@5.9.0/main.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.9.0/locales/es.js"></script>
     <title>Perfil</title>
     <link rel="icon" href="../static/img/MedEasyLogo.png">
   </head>
@@ -134,6 +139,13 @@
                 <p>{{ clock_out_time|default('N/A') }}</p>
             </div>
         </div>
+
+        <!-- Appointments Calendar -->
+        <div class="mt-10 bg-white p-6 rounded-lg shadow-xl max-w-3xl w-full text-gray-700">
+            <h2 class="text-2xl font-semibold mb-6 text-center">Citas Programadas</h2>
+            <div id="doctorAppointmentsCalendar" class="w-full"></div>
+        </div>
+
         <!-- Modify Profile Button -->
         <a href="/profile/edit" class="mt-8 bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400">Editar Perfil</a>
     </div>
@@ -147,6 +159,53 @@
             dropdown.style.display = "none";
         }
     }
-</script>
+    </script>
+    <!--Calendar Event View-->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var calendarEl = document.getElementById('doctorAppointmentsCalendar');
+        
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'listDay',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'listDay,listWeek,listMonth'
+            },
+            buttonText: {
+                today: 'Hoy',
+                month: 'Mes',
+                week: 'Semana',
+                day: 'Día'
+            },
+            navLinks: true,
+            eventColor: 'red',
+            locale: 'es',
+            eventTimeFormat: { 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                meridiem: 'short' 
+            }
+        });
+
+        calendar.render();
+
+        // Fetch and display the doctor's appointments on the calendar
+        fetch('/schedule_events/{{ doc_id }}')
+            .then(response => response.json())
+            .then(events => {
+                events = events.filter(event => event.color === "red"); // Filter out only red events (appointments)
+                events.forEach(event => {
+                    event.editable = false; 
+                    event.selectable = false;
+
+                    const startTime = new Date(event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    const endTime = new Date(event.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    event.title = `${startTime}-${endTime}`;
+                });
+                calendar.addEventSource(events);
+            });
+    });
+    </script>
 </body>
 </html>
