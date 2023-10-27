@@ -384,6 +384,15 @@ def edit_profile():
             phone_number = helper_getVal('phone_number', request.form, user.payload)
 
             collection = mongo.db.users
+            # Check if email already exists in the database
+            existing_email = collection.find_one({"email": email})
+            if existing_email and existing_email['_id'] != user_id:
+                flash("Email already exists", "error")  # Flash an error message
+                return redirect(request.url)  # Redirect back to the same page
+            existing_phone = collection.find_one({"payload.phone_number": phone_number})
+            if existing_phone and existing_phone['_id'] != user_id:
+                flash("Phone already exists", "error")  # Flash an error message
+                return redirect(request.url)  # Redirect back to the same page
             collection.update_one({"_id": ObjectId(user_id)}, {
                 "$set": {
                     "email": email,
