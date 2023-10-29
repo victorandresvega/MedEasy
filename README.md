@@ -2,15 +2,16 @@
 
 ![App Logo](path-to-app-logo.png)
 
-MedEasy is an innovative web-based platform tailored for the healthcare sector in Puerto Rico. Designed to streamline the medical appointment scheduling process, it integrates telemedicine capabilities, allowing patients to seamlessly search for doctors across various specialties, view their availability, and book appointments. By addressing the region's unique healthcare challenges, such as extended waiting times and complicated administrative procedures, MedEasy offers a user-centric solution. While it provides patients with a smoother healthcare journey, it also emphasizes resource efficiency for medical establishments, ensuring a holistic approach to healthcare delivery, all within a secure digital environment compliant with HIPAA standards.
+MedEasy is an web-based platform designed for the healthcare sector in Puerto Rico. Designed to streamline the medical appointment scheduling process, it integrates telemedicine capabilities, allowing patients to conveniently search for doctors across various specialties, view their availability, and book appointments. By addressing the island's unique healthcare challenges, such as extended waiting times and complicated administrative procedures, MedEasy offers a user-centric solution. While it provides patients with a smoother healthcare journey, it also emphasizes resource efficiency for medical establishments, ensuring a holistic approach to healthcare delivery, all within a secure digital environment compliant with HIPAA standards.
 
 ## Table of Contents
 
 - [MedEasy](#medeasy)
   - [Table of Contents](#table-of-contents)
   - [Features](#features)
-    - [Feature 1:](#feature-1)
+    - [Feature 1:](#feature-1) 
     - [Feature 2:](#feature-2)
+    - [Feature 3:](#feature-3)
   - [Getting Started](#getting-started)
   - [Pre-requisites](#pre-requisites)
   - [Installation](#installation)
@@ -23,9 +24,15 @@ MedEasy is an innovative web-based platform tailored for the healthcare sector i
 
 ### Feature 1:
 <!-- 1. Short description of the feature. -->
+Look up doctors based on name and filter by specialties to find the correct one for your needs. 
+
 ### Feature 2: 
 <!-- 1. Short description of the feature.
 ... and so on. -->
+Browse doctor profiles to view their schedules and book an appointment in an open time slot.
+
+### Feature 3:
+Patients and Doctors can browse their own profiles to view their active appointments, cancel them or modify them.
 
 <!-- ## Demo
 
@@ -34,6 +41,7 @@ MedEasy is an innovative web-based platform tailored for the healthcare sector i
 ## Getting Started
 
 <!-- Instructions on setting up the project locally. -->
+To access the live version of MedEasy, visit https://medeasy-f7a0fea02ca3.herokuapp.com/home.
 
 ## Pre-requisites
 
@@ -98,6 +106,6 @@ Any third-party content or assets used. -->
 
 ## Contact
 
-- **Carlos Rodriguez Sanchez ([carlos-143](https://github.com/carlos-143))**: Software Developer
-- **Ricardo Rodriguez-Gonzalez ([RicardoRodz](https://github.com/RicardoRodz))**: Software Developer
-- **Victor Vega-Ward ([victorvegaward](https://github.com/victorvegaward))**: Software Developer
+- **Carlos Rodriguez Sanchez ([carlos-143](https://github.com/carlos-143))**: Software Developer & Documentation
+- **Ricardo Rodriguez-Gonzalez ([RicardoRodz](https://github.com/RicardoRodz))**: Software Developer & UX/UI
+- **Victor Vega-Ward ([victorvegaward](https://github.com/victorvegaward))**: Software Developer & Database Admin
