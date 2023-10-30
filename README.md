@@ -13,7 +13,6 @@ MedEasy is an web-based platform designed for the healthcare sector in Puerto Ri
     - [Feature 2:](#feature-2)
     - [Feature 3:](#feature-3)
   - [Getting Started](#getting-started)
-  - [Pre-requisites](#pre-requisites)
   - [Installation](#installation)
   - [Usage](#usage)
   - [APIs Used](#apis-used)
@@ -41,12 +40,6 @@ Patients and Doctors can browse their own profiles to view their active appointm
 ## Getting Started
 
 <!-- Instructions on setting up the project locally. -->
-To access the live version of MedEasy, visit https://medeasy-f7a0fea02ca3.herokuapp.com/home.
-
-## Pre-requisites
-
-<!-- List of software/tools/libraries required.
-Any global dependencies. -->
 
 ## Installation
 
@@ -72,6 +65,16 @@ cd MedEasy
 ## Usage
 
 <!-- Steps or code snippets showcasing how to use the application or specific features. -->
+To access the live version of MedEasy, visit https://medeasy-f7a0fea02ca3.herokuapp.com/home.
+
+Sign-Up/Sign-In:
+Simply click the button located at the top right of the home page and input the required information to sign-in or sign-up.
+
+Search and Filter for Doctors:
+Use the search bar located in the home page to search for inputted names. The dropdown may be used to filter by specialty. Both may be used together to further refine results.
+
+View Doctor profiles and book Appointments:
+Sign-in  and click on a doctor in the home page to view their schedule. Use the calendar to view open time slots and book an appointment. Active appointments may be viewed and cancelled in your profile page. 
 
 ## APIs Used
 
@@ -83,20 +86,6 @@ cd MedEasy
 2. Back-end: Framework/Libraries used [Flask](https://flask.palletsprojects.com/en/2.3.x/)
 3. Database: Database technology used [MongoDB](https://www.mongodb.com)
 4. Cloud Platform: Cloud deplyment platform used [Heroku](https://www.heroku.com)
-
-<!-- ## Contribute
-
-Details about how other developers can contribute to the project.
-
-Fork the Project
-Create your Feature Branch (git checkout -b feature/YourFeature)
-Commit your Changes (git commit -m 'Add some YourFeature')
-Push to the Branch (git push origin feature/YourFeature)
-Open a Pull Request -->
-
-<!-- ## License
-
-Details about the license (e.g., MIT, Apache, etc.). Include a link to the LICENSE file if available. -->
 
 <!-- ## Acknowledgments
 
