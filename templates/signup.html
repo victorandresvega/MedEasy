@@ -367,8 +367,12 @@
     </div>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
+        // Existing referrer logic
         const referrer = document.referrer;
         if (referrer && referrer.includes("/signin")) {
+          document.getElementById("patient-btn").click();
+        } else {
+          // Make "patient" button default if not coming from "/signin"
           document.getElementById("patient-btn").click();
         }
       });
