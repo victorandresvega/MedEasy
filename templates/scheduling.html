@@ -85,6 +85,15 @@
         </div>
       </div>
     </nav>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
     <!-- Main Content -->
     <div class="mt-10 flex justify-center">
         <div class="w-4/5 bg-gray-100 p-6 rounded-lg shadow-lg flex">

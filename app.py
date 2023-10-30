@@ -580,7 +580,7 @@ def create_appointment():
     existing_appointment = mongo.db.appointments.find_one({"timestamp": selectedEpoch, "doctor_id": ObjectId(doc_id)})
     if existing_appointment:
         return jsonify({"success": False, "message": "Este espacio ya fue citado. Por favor elija otro espacio."})
-
+    
     # Otherwise, create the appointment
     appointment = {
         "doctor_id": ObjectId(doc_id),
