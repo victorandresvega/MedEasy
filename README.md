@@ -12,8 +12,6 @@ MedEasy is an web-based platform designed for the healthcare sector in Puerto Ri
     - [Feature 1:](#feature-1) 
     - [Feature 2:](#feature-2)
     - [Feature 3:](#feature-3)
-  - [Getting Started](#getting-started)
-  - [Installation](#installation)
   - [Usage](#usage)
   - [APIs Used](#apis-used)
   - [Built With](#built-with)
@@ -36,31 +34,6 @@ Patients and Doctors can browse their own profiles to view their active appointm
 <!-- ## Demo
 
 [Link to a live demo, if available] or screenshots of the application in use. -->
-
-## Getting Started
-
-<!-- Instructions on setting up the project locally. -->
-
-## Installation
-
-<!-- 1. Clone the Repository
-   - Use Bash Command:
-
-        git clone  https://github.com/victorandresvega/MedEasy.git -->
-
-<!-- 1. Change to the directory:
-
-cd MedEasy
-
-3. Install NPM packages (if using Node.js)
-
-        npm install
-
-4. Start the application
-
-        npm start
-
-5. Visit http://localhost:[port] in your browser. -->
 
 ## Usage
 
