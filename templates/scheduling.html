@@ -295,62 +295,59 @@
                   calendar.addEventSource(events);
               });
 
-          document.getElementById('bookAppointment').addEventListener('click', function() {
-              if (selectedInfo) {
-                  // Format the date and time
-                  const selectedDate = new Date(selectedInfo.startStr);
-                  const formattedDate = selectedDate.toLocaleDateString();
-                  const formattedTime = selectedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('bookAppointment').addEventListener('click', function() {
+            if (selectedInfo) {
+                const selectedDate = new Date(selectedInfo.startStr);
+                const currentDateTime = new Date();
 
-                  // Ask for confirmation
-                  const isConfirmed = confirm(`Desea sacar su cita para el dia: ${formattedDate} a las ${formattedTime}?`);
+                if (selectedDate < currentDateTime) {
+                    alert("No puede programar una cita en horario que ya paso.");
+                    return;
+                }
 
-                  if (isConfirmed) {
-                      // Convert the selected date and time to epoch timestamp
-                      const selectedEpoch = selectedDate.getTime() / 1000;
+                const isConfirmed = confirm(`Desea sacar su cita para el día: ${selectedDate.toLocaleDateString()} a las ${selectedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}?`);
 
-                      // Send the data to the server to store the appointment
-                      fetch("/create_appointment", {
-                          method: "POST",
-                          headers: {
-                              'Content-Type': 'application/json'
-                          },
-                          body: JSON.stringify({
-                              selectedEpoch: selectedEpoch,
-                              doc_id: '{{ doc_id }}'
-                          })
-                      })
-                      .then(response => response.json())
-                      .then(data => {
-                          if (data.success) {
-                              // Remove the green event
-                              if (selectedEvent) {
-                                  selectedEvent.remove();
-                                  selectedEvent = null;
-                              }
-                              location.reload();
-                              // Add the event to the calendar
-                              calendar.addEvent({
-                                  id: data.eventId,
-                                  start: new Date(selectedInfo.startStr),
-                                  end: new Date(selectedInfo.endStr),
-                                  color: 'red',
-                                  editable: false,
-                                  selectable: false
-                              })
-                              alert(data.message);
-                          } else {
-                              alert(data.message);
-                          }
-                      });
-                      
-                      // Reset the selectedInfo and disable the button
-                      selectedInfo = null;
-                      document.getElementById('bookAppointment').disabled = true;
-                  }
-              }
-          });
-      });
+                if (isConfirmed) {
+                    const selectedEpoch = selectedDate.getTime() / 1000;
+
+                    fetch("/create_appointment", {
+                        method: "POST",
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            selectedEpoch: selectedEpoch,
+                            doc_id: '{{ doc_id }}'
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            if (selectedEvent) {
+                                selectedEvent.remove();
+                                selectedEvent = null;
+                            }
+                            location.reload();
+                            calendar.addEvent({
+                                id: data.eventId,
+                                start: new Date(selectedInfo.startStr),
+                                end: new Date(selectedInfo.endStr),
+                                color: 'red',
+                                editable: false,
+                                selectable: false
+                            });
+                            alert(data.message);
+                        } else {
+                            alert(data.message);
+                        }
+                    });
+
+                    selectedInfo = null;
+                    document.getElementById('bookAppointment').disabled = true;
+                }
+            }
+        });
+    });
       </script>
 </body>
 </html>

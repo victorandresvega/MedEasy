@@ -10,3 +10,4 @@ python-dotenv
 Werkzeug
 pybase64
 requests
+Flask-APScheduler

@@ -14,6 +14,8 @@ from user import User
 from dotenv import load_dotenv
 from bson import ObjectId
 from datetime import datetime, timedelta
+from flask_apscheduler import APScheduler
+from apscheduler.triggers.cron import CronTrigger
 
 
 
@@ -34,6 +36,26 @@ app.config[
 
 mongo = PyMongo(app, tlsCAFile=certifi.where())
 bcrypt = Bcrypt(app)
+
+# Create the scheduler instance
+scheduler = APScheduler()
+
+# Start the scheduler
+scheduler.start()
+
+# Function to cancel overdue appointments
+def cancel_overdue_appointments():
+    current_time = datetime.now()
+    one_hour_in_future = current_time + timedelta(hours=1)
+    one_hour_in_future_epoch = one_hour_in_future.timestamp()
+
+    appointments_to_cancel = mongo.db.appointments.find({"timestamp": {"$lt": one_hour_in_future_epoch}})
+
+    for appointment in appointments_to_cancel:
+        mongo.db.appointments.delete_one({"_id": appointment["_id"]})
+
+# Schedule the job to run every hour
+scheduler.add_job(func=cancel_overdue_appointments, trigger=CronTrigger.from_crontab('0 * * * *'), id='cancel_overdue_appointments')
 
 @app.route("/", methods=["GET", "POST"])
 @app.route("/home", methods=["GET", "POST"])
@@ -180,7 +202,7 @@ def profile():
         appointment_time = time_filter(appointment['timestamp'])
 
         appointment['date'] = appointment_date
-        appointment['time'] = appointment_time
+        appointment['time'] = convert_to_am_pm(appointment_time)
 
         doctor = mongo.db.users.find_one({"_id": appointment['doctor_id']})
         if doctor:
