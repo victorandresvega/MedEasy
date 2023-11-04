@@ -194,18 +194,46 @@
                   />
                 </div>
 
-                <div class="mb-4">
-                  <label for="address">Localizacion:</label>
-                  <input
-                    type="text"
-                    id="address"
-                    name="address"
-                    required
-                    class="w-full p-2 border rounded-md"
-                  />
-                </div>
+                  <div class="mb-4">
+                      <label for="address1">Direccion:</label>
+                      <input
+                          type="text"
+                          id="address1"
+                          name="address1"
+                          required
+                          class="w-full p-2 border rounded-md"
+                      />
+                  </div>
+                  <div class="mb-4">
+                    <label for="pueblo">Pueblo:</label>
+                    <div class="dropdown-pueblo relative">
+                      <button class="w-full bg-gray-200 text-left px-4 py-2 rounded border focus:outline-none focus:ring" id="dropdownButtonPueblo">
+                        Seleccionar Pueblo
+                        <span class="material-icons absolute right-3 top-1/2 transform -translate-y-1/2">keyboard_arrow_down</span>
+                      </button>
+                      <div class="dropdown-menu-pueblo absolute w-full mt-2 hidden border rounded bg-white shadow-md z-10" style="max-height: 150px; overflow-y: auto;">
+                        <!-- Pueblo checkbox options -->
+                        {% for municipality in municipalities %}
+                          <label class="block px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                            <input type="checkbox" name="pueblo" value="{{ municipality }}" class="mr-2" />
+                            {{ municipality }}
+                          </label>
+                        {% endfor %}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mb-4">
+                      <label for="zip_code">Zip Code:</label>
+                      <input
+                          type="text"
+                          id="zip_code"
+                          name="zip_code"
+                          required
+                          class="w-full p-2 border rounded-md"
+                      />
+                  </div>
 
-                                <div class="mb-4">
+                  <div class="mb-4">
                   <label for="phone_number">Telefono:</label>
                   <input
                     type="tel"
@@ -494,6 +522,56 @@
           });
         });
       });
+
+      // Dropdown logic for "Pueblo" dropdown
+      document
+        .getElementById("dropdownButtonPueblo")
+        .addEventListener("click", function () {
+          const menu = document.querySelector(".dropdown-menu-pueblo");
+          menu.classList.toggle("hidden");
+
+          // Update arrow icon
+          const icon = this.querySelector(".material-icons");
+          if (menu.classList.contains("hidden")) {
+            icon.textContent = "keyboard_arrow_down";
+          } else {
+            icon.textContent = "keyboard_arrow_up";
+          }
+        });
+
+      const puebloCheckboxes = document.querySelectorAll(".dropdown-menu-pueblo input[type='checkbox']");
+      puebloCheckboxes.forEach((checkbox) => {
+        checkbox.addEventListener("change", function () {
+          puebloCheckboxes.forEach((cbox) => {
+            if (cbox !== checkbox) {
+              cbox.checked = false;
+            }
+          });
+          updatePuebloButtonText();
+        });
+      });
+
+      function updatePuebloButtonText() {
+        const selectedValues = [];
+        puebloCheckboxes.forEach((cbox) => {
+          if (cbox.checked) {
+            selectedValues.push(cbox.parentNode.textContent.trim());
+          }
+        });
+        document.getElementById("dropdownButtonPueblo").textContent =
+          selectedValues.length > 0 ? selectedValues[0] : "Choose a Pueblo";
+      }
+
+      // Clicking outside of the "Pueblo" dropdown should close it
+      document.addEventListener("click", function (event) {
+        const dropdown = document.querySelector(".dropdown-menu-pueblo");
+        const button = document.getElementById("dropdownButtonPueblo");
+        if (!button.contains(event.target) && !dropdown.contains(event.target)) {
+          dropdown.classList.add("hidden");
+          button.querySelector(".material-icons").textContent = "keyboard_arrow_down";
+        }
+      });
+
 
       // Clicking outside of dropdowns should close them
       document.addEventListener("click", function (event) {

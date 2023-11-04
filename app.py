@@ -83,24 +83,22 @@ def signupGET():
     specialties = Doctor.medicalSpecialties
     medical_coverages = Doctor.medicalCoverages
     work_days = Doctor.daysWeek
+    municipalities = Doctor.municipalities
     
-    return render_template('signup.html', specialties=specialties, medical_coverages=medical_coverages, work_days= work_days)
+    return render_template('signup.html', specialties=specialties, medical_coverages=medical_coverages, work_days= work_days, municipalities=municipalities)
     
 @app.route('/signup', methods=['POST'])
 def signupPOST():
     account_type = request.form.get('accountType')
     email = request.form.get('email')
-
     # Check if the email already exists in the database
     existing_user = mongo.db["users"].find_one({"email": email})
-
     if existing_user:
         flash('An account with that email already exists!', 'danger')
         return signupGET()
 
     # Continue with the rest of the signup process if email is unique
     password = request.form.get('password')
-
     payload = {}
 
     # Fields specific to the doctor role
@@ -112,11 +110,19 @@ def signupPOST():
     if account_type == "doctor":
         payload["first_name"] = request.form.get('first_name')
         payload["last_name"] = request.form.get('last_name')
+
+        # Concatenate the address line 1, pueblo (municipality), and zip code
+        address_line1 = request.form.get('address1')
+        pueblo = request.form.get('pueblo')
+        zip_code = request.form.get('zip_code')
+        full_address = f"{address_line1}, {pueblo}, Puerto Rico {zip_code}"
+        
+
+        payload["address"] = full_address
         payload["specialties"] = request.form.getlist('specialties[]')
-        payload["address"] = request.form.get('address')
         payload["medical_coverages"] = request.form.getlist('medical_coverages[]')
         payload["phone_number"] = request.form.get('phone_number')
-        
+
         schedule = {}
         schedule["work_days"] = request.form.getlist('work_days[]')
 
@@ -124,7 +130,6 @@ def signupPOST():
         schedule["clock_in"] = convert_to_24h(request.form.get('clock_in'))
         schedule["clock_out"] = convert_to_24h(request.form.get('clock_out'))
 
-        
         payload["schedule"] = schedule  # Add schedule to the payload
 
         photo_file = request.files.get('photo')
@@ -134,7 +139,7 @@ def signupPOST():
             encoded_photo = Photo.encodeImage(photo_path)
             os.remove(photo_path)
         else:
-            encoded_photo = Photo.encodeImage("https://freesvg.org/img/abstract-user-flat-4.png") #Default image
+            encoded_photo = Photo.encodeImage("https://freesvg.org/img/abstract-user-flat-4.png")  # Default image
 
         payload["photo"] = encoded_photo
 
@@ -148,12 +153,13 @@ def signupPOST():
     return redirect(url_for('home'))
 
 def convert_to_24h(time_str):
-    """ Convert time from 12 hour format (with AM/PM) to 24 hour format """
+    """Convert time from 12-hour format (with AM/PM) to 24-hour format"""
     try:
         time_obj = datetime.strptime(time_str, '%I:%M %p')
         return time_obj.strftime('%H:%M')
     except:
         return time_str
+
 
 
 @app.route('/signout')
@@ -377,14 +383,14 @@ def edit_profile():
             return redirect(url_for('profile'))
 
         else:
-            # Convert clock_in and clock_out values to HH:MM format
-            clock_in_time = convert_to_24h(request.form.get('clock_in', user.payload.get('schedule', {}).get('clock_in', '00:00')))
-            clock_out_time = convert_to_24h(request.form.get('clock_out', user.payload.get('schedule', {}).get('clock_out', '00:00')))
+            # Retrieve current values for clock_in and clock_out
+            clock_in_time = user.payload.get('schedule', {}).get('clock_in', '09:00')
+            clock_out_time = user.payload.get('schedule', {}).get('clock_out', '17:00')
 
-
-        return render_template('editDoctor.html', doctor_email=user, doctor=user.payload,
-                       specialties=specialties, medical_coverages=medical_coverages, work_days=work_days,
-                       clock_in_time=clock_in_time, clock_out_time=clock_out_time)
+            # Render the form with the current values
+            return render_template('editDoctor.html', doctor_email=user, doctor=user.payload,
+                                   specialties=specialties, medical_coverages=medical_coverages, work_days=work_days,
+                                   clock_in_time=clock_in_time, clock_out_time=clock_out_time)
 
     elif user.role == "patient":
         if request.method == 'POST':

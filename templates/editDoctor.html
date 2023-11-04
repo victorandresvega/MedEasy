@@ -146,14 +146,14 @@
             <!-- Clock In and Clock Out times -->
             <div class="mb-4">
                 <label for="clock_in" class="block mb-2 font-medium">Hora de Entrada:</label>
-                <input type="time" name="clock_in" value="{{ doctor.schedule.clock_in|time(format='%H:%M') }}" class="w-full p-2 border rounded-md">
-
+                <input type="time" name="clock_in" value="{{ clock_in_time }}" class="w-full p-2 border rounded-md">
             </div>
 
             <div class="mb-4">
                 <label for="clock_out" class="block mb-2 font-medium">Hora de Salida:</label>
-                <input type="time" name="clock_out" value="{{ doctor.schedule.clock_out|time(format='%H:%M') }}" class="w-full p-2 border rounded-md">
+                <input type="time" name="clock_out" value="{{ clock_out_time }}" class="w-full p-2 border rounded-md">
             </div>
+
 
 
             <!-- Profile Photo -->
