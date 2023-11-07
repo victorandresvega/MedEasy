@@ -572,25 +572,97 @@ def create_appointment():
     selectedEpoch = data['selectedEpoch']
     doc_id = data['doc_id']
     patient_id = session.get('_id', None)
-    
+
     # Ensure the patient is logged in
     if not patient_id:
-        return jsonify({"success": False, "message": "Debe iniciar session como paciente para acceder."})
+        return jsonify({"success": False, "message": "Debe iniciar sesión como paciente para acceder."})
 
-    # Check if the slot is already booked
-    existing_appointment = mongo.db.appointments.find_one({"timestamp": selectedEpoch, "doctor_id": ObjectId(doc_id)})
-    if existing_appointment:
-        return jsonify({"success": False, "message": "Este espacio ya fue citado. Por favor elija otro espacio."})
-
-    # Otherwise, create the appointment
-    appointment = {
+    # Check if the patient already has an active appointment with the same doctor
+    existing_appointment = mongo.db.appointments.find_one({
         "doctor_id": ObjectId(doc_id),
         "patient_id": ObjectId(patient_id),
-        "timestamp": selectedEpoch
-    }
-    
-    mongo.db.appointments.insert_one(appointment)
-    return jsonify({"success": True, "message": "Su cita fue procesada exitosamente!"})
+        "timestamp": {"$gt": int(time.time())}
+    })
+
+    if existing_appointment:
+        # Replace the existing appointment with the new one
+        mongo.db.appointments.update_one({"_id": existing_appointment["_id"]}, {
+            "$set": {
+                "timestamp": selectedEpoch
+            }
+        })
+        return jsonify({"success": True, "message": "Su cita existente ha sido modificada."})
+    else:
+        # Create a new appointment
+        appointment = {
+            "doctor_id": ObjectId(doc_id),
+            "patient_id": ObjectId(patient_id),
+            "timestamp": selectedEpoch
+        }
+
+        mongo.db.appointments.insert_one(appointment)
+        return jsonify({"success": True, "message": "Su nueva cita ha sido programada exitosamente!"})
+
+@app.route("/check_existing_appointment", methods=["POST"])
+def check_existing_appointment():
+    data = request.json
+    selectedEpoch = data['selectedEpoch']
+    doc_id = data['doc_id']
+    patient_id = session.get('_id', None)
+
+    if not patient_id:
+        return jsonify({"hasExistingAppointment": False})
+
+    existing_appointment = mongo.db.appointments.find_one({
+        "doctor_id": ObjectId(doc_id),
+        "patient_id": ObjectId(patient_id),
+        "timestamp": {"$gt": int(time.time())}
+    })
+
+    if existing_appointment:
+        doctor = mongo.db.users.find_one({"_id": ObjectId(doc_id)})['payload']
+        doctor_full_name = f"{doctor['first_name']} {doctor['last_name']}"
+
+        return jsonify({
+            "hasExistingAppointment": True,
+            "doctorName": doctor_full_name,
+            "existingAppointment": {
+                "_id": str(existing_appointment["_id"]),
+                "timestamp": datetime.fromtimestamp(existing_appointment["timestamp"]).strftime("%m/%d/%Y %I:%M %p")
+            }
+        })
+    else:
+        print("llegue")
+        return jsonify({"hasExistingAppointment": False})
+
+
+@app.route('/modify_appointment', methods=['POST'])
+def modify_appointment():
+    data = request.json
+    appointment_id = data['appointment_id']
+    selectedEpoch = data['selectedEpoch']
+    patient_id = session.get('_id', None)
+
+    if not patient_id:
+        return jsonify({"success": False, "message": "Debe iniciar sesión como paciente para acceder."})
+
+    existing_appointment = mongo.db.appointments.find_one({
+        "_id": ObjectId(appointment_id),
+        "patient_id": ObjectId(patient_id)
+    })
+
+    if not existing_appointment:
+        return jsonify({"success": False, "message": "No tiene permiso para modificar esta cita."})
+
+    # Modify the appointment with the new selected time
+    mongo.db.appointments.update_one({"_id": ObjectId(appointment_id)}, {
+        "$set": {
+            "timestamp": selectedEpoch
+        }
+    })
+
+    return jsonify({"success": True, "message": "Su cita ha sido modificada exitosamente."})
+
 
 @app.route('/cancel_appointment/<appointment_id>', methods=['POST'])
 def cancel_appointment(appointment_id):

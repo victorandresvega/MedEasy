@@ -108,10 +108,14 @@
                   <td class="px-6 py-4 align-middle">{{ appointment.doctor_name }}</td>
                   <td class="px-6 py-4 align-middle">{{ appointment.phone }}</td>
                   <td class="px-6 py-4 align-middle">
-                      <span class="material-icons text-blue-600 cursor-pointer hover:text-blue-800 mr-4" title="Modify Appointment">edit</span> 
+                      <span class="material-icons text-blue-600 cursor-pointer hover:text-blue-800 mr-4" title="Cambiar Cita">
+                          <a href="/schedule/{{ appointment.doctor_id }}">
+                              edit
+                          </a>
+                      </span>
                       <span 
                           class="material-icons text-red-600 cursor-pointer hover:text-red-800" 
-                          title="Cancel Appointment" 
+                          title="Cancelar Cita" 
                           onclick="confirmCancel('{{ appointment._id }}')"
                       >
                           cancel
