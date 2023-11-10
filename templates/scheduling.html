@@ -140,7 +140,7 @@
             </div>
 
             <!-- Google Map -->
-            <div class="mt-4 h-96 bg-gray-300 rounded-md shadow-md" id="map"></div>
+            <div class="mt-4 h-96 bg-gray-300 rounded-md shadow-md doctorCords" id="map" data-coordinates="{{ doctor.coordinates.latitude }},{{ doctor.coordinates.longitude }}"></div>
         </div>
 
         <!-- Calendar for Available Slots -->
@@ -167,12 +167,6 @@
       defer
       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCL27RuRr9Z-AtwVnvYpET0rHTmYcR6IQ0&callback=initMap"
     ></script>
-
-    <!-- JS to initialize the Google map-->
-    <script>
-      var coordinates = {{coordinates|tojson|safe}};
-      initMap(coordinates);
-    </script>
 
     <!-- JS to handle dropdown display -->
     <script>

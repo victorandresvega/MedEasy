@@ -186,21 +186,18 @@ def nominatim_geocoding(address):
     if response.status_code == 200:
         # Parse the JSON response
         data = response.json()
-        print(data)
 
         if data:
             # Extract the latitude and longitude from the response
             lat = float(data[0]['lat'])
             lon = float(data[0]['lon'])
 
-            # Print the coordinates
-            print(f"Latitude: {lat}, Longitude: {lon}")
             coordinates["latitude"] = lat
             coordinates["longitude"] = lon
         else:
-            print("No results found.")
+            flash("No results found.")
     else:
-        print("Error: Unable to connect to Nominatim API.")
+        flash("Error: Unable to connect to Nominatim API.")
     return coordinates
 
 
@@ -514,7 +511,6 @@ def schedule(doc_id):
         work_days = [Doctor.day_to_fullcalendar_format(day) for day in  user['payload']['schedule'].get('work_days', [])]
 
         coordinates = {"latitude" : doctor_data['coordinates']['latitude'], "longitude" : doctor_data['coordinates']['longitude']}
-        print(coordinates)
         
         return render_template("scheduling.html", doctor=doctor_data, time_slots=time_slots, clock_in_AmPm=clock_in_AmPm, clock_out_AmPm=clock_out_AmPm, clock_in_24=clock_in_24, clock_out_24=clock_out_24, work_days=work_days, coordinates=coordinates, doc_id=doc_id)
 
