@@ -74,7 +74,7 @@ def signinPOST():
         flash('Login successful!', 'success')
         return redirect(url_for('home'))
     else:
-        flash('Login unsuccessful. Check email and password', 'danger')
+        flash("Inicio de sesión fallido. Verifique el correo electrónico y la contraseña.", 'danger')
     return signinGET()
 
 
@@ -94,7 +94,7 @@ def signupPOST():
     # Check if the email already exists in the database
     existing_user = mongo.db["users"].find_one({"email": email})
     if existing_user:
-        flash('An account with that email already exists!', 'danger')
+        flash('Ya existe una cuenta con ese correo electrónico', 'danger')
         return signupGET()
 
     # Continue with the rest of the signup process if email is unique
@@ -149,7 +149,7 @@ def signupPOST():
 
     session['_id'] = created_user._id
     session['user_role'] = account_type
-    flash('Account created!', 'success')
+    flash('Cuenta creada exitosamente', 'success')
     return redirect(url_for('home'))
 
 def convert_to_24h(time_str):
@@ -165,7 +165,7 @@ def convert_to_24h(time_str):
 @app.route('/signout')
 def signout():
     session.clear()
-    flash('You have been logged out successfully!', 'success')
+    flash('Su sesión ha cerrado exitosamente', 'success')
     return redirect(url_for('home'))
 
 
@@ -177,7 +177,7 @@ def profile():
 
 
     if not user:  
-        flash('User not found.', 'danger')
+        flash('Usuario no encontrado', 'danger')
         return redirect(url_for('home'))
 
     # Convert the epoch timestamp to date and time for each appointment
@@ -269,7 +269,7 @@ def profile():
 
 
     else:
-        flash('Invalid profile type.', 'danger')
+        flash('Tipo de perfil inválido', 'danger')
         return redirect(url_for('home'))
     
 def helper_getVal(field_name, form, payload):
@@ -307,7 +307,7 @@ def edit_profile():
     work_days = Doctor.daysWeek
 
     if not user:
-        flash('User not found.', 'danger')
+        flash('Usuario no encontrado', 'danger')
         return redirect(url_for('home'))
 
     if user.role == "doctor":
@@ -369,12 +369,12 @@ def edit_profile():
             existing_email = collection.find_one({"email": email})
             if existing_email and str(existing_email['_id']) != str(user_id):
                 print(existing_phone['_id'], user_id)
-                flash("Email already exists", "error")  # Flash an error message
+                flash("El correo electrónico ya está en uso", "error")  # Flash an error message
                 return redirect(request.url)  # Redirect back to the same page
             existing_phone = collection.find_one({"payload.phone_number": phone_number})
             if existing_phone and str(existing_phone['_id']) != str(user_id):
                 print(existing_phone['_id'], user_id)
-                flash("Phone already exists", "error")  # Flash an error message
+                flash("Número de teléfono ya está en uso", "error")  # Flash an error message
                 return redirect(request.url)  # Redirect back to the same page
             collection.update_one({"_id": ObjectId(user_id)}, {
                 "$set": updated_payload
@@ -403,13 +403,13 @@ def edit_profile():
             # Check if email already exists in the database
             existing_email = collection.find_one({"email": email})
             if existing_email and str(existing_email['_id']) != str(user_id):
-                flash("Email already exists", "error")  # Flash an error message
+                flash("El correo electrónico ya está en uso.", "error")  # Flash an error message
                 return redirect(request.url)  # Redirect back to the same page
             existing_phone = collection.find_one({"payload.phone_number": phone_number})
             if existing_phone and str(existing_phone['_id']) != str(user_id):
                 print(existing_phone['_id'] != user_id)
                 print(existing_phone['_id'], user_id)
-                flash("Phone already exists", "error")  # Flash an error message
+                flash("Número de teléfono ya está en uso","error")  # Flash an error message
                 return redirect(request.url)  # Redirect back to the same page
             collection.update_one({"_id": ObjectId(user_id)}, {
                 "$set": {
@@ -425,7 +425,7 @@ def edit_profile():
         return render_template('editPatient.html', user=user)
 
     else:
-        flash('Invalid profile type.', 'danger')
+        flash('Tipo de perfil incorrecto', 'danger')
         return redirect(url_for('home'))
 
 def helper_getVal(field_name, form, payload):
@@ -467,7 +467,7 @@ def convert_to_24h(time_str):
 def schedule(doc_id):
     user = mongo.db.users.find_one({"_id": ObjectId(doc_id)})
     if not user:
-        flash('Doctor not found.', 'danger')
+        flash('No se ha encontrado ningun doctor', 'danger')
         return redirect(url_for('home'))
 
     doctor_data = user['payload']

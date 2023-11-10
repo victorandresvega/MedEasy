@@ -80,7 +80,17 @@
           {% endif %}
         </div>
       </div>
-    </nav>
+    </nav> {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="mt-4 mx-4">
+      {% for category, message in messages %}
+        <div class="alert {{ category }}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
 
         <!-- Main Content -->
       <div class="flex mt-10 mx-10 h-[calc(100vh-60px)]">
