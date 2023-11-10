@@ -155,16 +155,6 @@ form button:hover {
     border-radius: 5px;
 }
 
-/*About Us*/
-.about-section {
-    background-color: #f9fafb;
-    border: 1px solid #e2e8f0;
-}
-
-.indent-paragraph {
-    text-indent: 4em;
-}
-
 /* Google Map */
 #map {
     transition: all 0.3s ease;
