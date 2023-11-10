@@ -303,8 +303,7 @@
                   const formattedTime = selectedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
                   // Ask for confirmation
-                  // const isConfirmed = confirm(`Desea sacar su cita para el dia: ${formattedDate} a las ${formattedTime}?`);
-                  const isConfirmed = true;
+                  const isConfirmed = confirm(`Desea sacar su cita para el dia: ${formattedDate} a las ${formattedTime}?`);
                   if (isConfirmed) {
                       // Convert the selected date and time to epoch timestamp
                       const selectedEpoch = selectedDate.getTime() / 1000;
