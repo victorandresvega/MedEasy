@@ -134,13 +134,10 @@ def signupPOST():
 
         payload["schedule"] = schedule  # Add schedule to the payload
 
-        payload["address"] = request.form.get('address')
-
-
         coordinates = {}
         #Convert address string to coordinate values for use in the Map and return as a
         #dictionary with keys "latitude" and "longitude"
-        coordinates = nominatim_geocoding(request.form.get('address'))
+        coordinates = nominatim_geocoding(full_address)
         
         payload["coordinates"] = coordinates #add coordinates to payload
 
