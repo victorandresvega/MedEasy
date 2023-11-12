@@ -391,6 +391,9 @@ def edit_profile():
                 })
             else:
                 encoded_photo = user.payload.get("photo", None)
+            
+            #Location coordinates update
+            coordinates = nominatim_geocoding(address)
 
             updated_payload = {
                 "email": email,
@@ -398,6 +401,7 @@ def edit_profile():
                 "payload.last_name": last_name,
                 "payload.specialties": specialties,
                 "payload.address": address,
+                "payload.coordinates": coordinates,
                 "payload.phone_number": phone_number,
                 "payload.medical_coverages": medical_coverages,
                 "payload.schedule.work_days": work_days,
