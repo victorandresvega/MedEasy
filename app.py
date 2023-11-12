@@ -14,6 +14,7 @@ from user import User
 from dotenv import load_dotenv
 from bson import ObjectId
 from datetime import datetime, timedelta
+import requests
 
 
 
@@ -101,12 +102,13 @@ def signupPOST():
     password = request.form.get('password')
     payload = {}
 
-    # Fields specific to the doctor role
+    # Fields specific to the patient role
     if account_type == "patient":
         payload["first_name"] = request.form.get('patient_first_name')
         payload["last_name"] = request.form.get('patient_last_name')
         payload["phone_number"] = request.form.get('patient_phone_number')
 
+    # Fields specific to the doctor role
     if account_type == "doctor":
         payload["first_name"] = request.form.get('first_name')
         payload["last_name"] = request.form.get('last_name')
@@ -131,6 +133,16 @@ def signupPOST():
         schedule["clock_out"] = convert_to_24h(request.form.get('clock_out'))
 
         payload["schedule"] = schedule  # Add schedule to the payload
+
+        payload["address"] = request.form.get('address')
+
+
+        coordinates = {}
+        #Convert address string to coordinate values for use in the Map and return as a
+        #dictionary with keys "latitude" and "longitude"
+        coordinates = nominatim_geocoding(request.form.get('address'))
+        
+        payload["coordinates"] = coordinates #add coordinates to payload
 
         photo_file = request.files.get('photo')
         if photo_file and photo_file.filename != '':
@@ -159,6 +171,41 @@ def convert_to_24h(time_str):
         return time_obj.strftime('%H:%M')
     except:
         return time_str
+    
+#Function that accepts a string address and returns a dictionary containing the coordinates of the address,
+#to be used when a doctor first signs up to the site or when they modify their address information
+def nominatim_geocoding(address):
+    #Coordinates point to Null Island as the default value
+    coordinates = {
+        "latitude" : 0,
+        "longitude" : 0
+    }
+    #This function makes an HTTP request to the OpenStreetMap Nominatim to geocode the address of a doctor
+    #and return the coordinates 
+    endpoint = "https://nominatim.openstreetmap.org/search"
+
+    parameters = {"q": address, "format": "json"}
+
+    response = requests.get(endpoint, params=parameters)
+
+    # Check if the request was successful
+    if response.status_code == 200:
+        # Parse the JSON response
+        data = response.json()
+
+        if data:
+            # Extract the latitude and longitude from the response
+            lat = float(data[0]['lat'])
+            lon = float(data[0]['lon'])
+
+            coordinates["latitude"] = lat
+            coordinates["longitude"] = lon
+        else:
+            flash("No results found.")
+    else:
+        flash("Error: Unable to connect to Nominatim API.")
+    return coordinates
+
 
 
 
@@ -351,6 +398,9 @@ def edit_profile():
                 })
             else:
                 encoded_photo = user.payload.get("photo", None)
+            
+            #Location coordinates update
+            coordinates = nominatim_geocoding(address)
 
             updated_payload = {
                 "email": email,
@@ -358,6 +408,7 @@ def edit_profile():
                 "payload.last_name": last_name,
                 "payload.specialties": specialties,
                 "payload.address": address,
+                "payload.coordinates": coordinates,
                 "payload.phone_number": phone_number,
                 "payload.medical_coverages": medical_coverages,
                 "payload.schedule.work_days": work_days,
@@ -490,9 +541,10 @@ def schedule(doc_id):
         clock_in_24 = convert_to_24h(doctor_data.get('schedule', {}).get('clock_in', '00:00'))
         clock_out_24 = convert_to_24h(doctor_data.get('schedule', {}).get('clock_out', '00:00'))
         work_days = [Doctor.day_to_fullcalendar_format(day) for day in  user['payload']['schedule'].get('work_days', [])]
+
+        coordinates = {"latitude" : doctor_data['coordinates']['latitude'], "longitude" : doctor_data['coordinates']['longitude']}
         
-        
-        return render_template("scheduling.html", doctor=doctor_data, time_slots=time_slots, clock_in_AmPm=clock_in_AmPm, clock_out_AmPm=clock_out_AmPm, clock_in_24=clock_in_24, clock_out_24=clock_out_24, work_days=work_days, doc_id=doc_id )
+        return render_template("scheduling.html", doctor=doctor_data, time_slots=time_slots, clock_in_AmPm=clock_in_AmPm, clock_out_AmPm=clock_out_AmPm, clock_in_24=clock_in_24, clock_out_24=clock_out_24, work_days=work_days, coordinates=coordinates, doc_id=doc_id)
 
     elif request.method == "POST":
         selectedEpoch = request.json['selectedEpoch']

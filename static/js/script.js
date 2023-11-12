@@ -1,41 +1,42 @@
-function initMap(){
+function initMap() {
+
+    let defaultCenter = { lat: 18.200178, lng: -66.44513 };
+    let defaultZoom = 9;
+    let mapContainer = document.querySelector('.doctorCords');
+
+    if (mapContainer) {
+        let coordinates = mapContainer.getAttribute('data-coordinates');
+        let [lat, lng] = coordinates.split(',').map(parseFloat);
+
+        defaultCenter = { lat, lng };
+        defaultZoom = 17;
+    }
+
     map = new google.maps.Map(document.getElementById('map'), {
-        center: {lat: 	18.200178, lng: -66.44513},
-        zoom: 10,
+        center: defaultCenter,
+        zoom: defaultZoom,
         mapId: '122517338e1e4a8'
-        });
-    
-    locations = getLocations()
+    });
+
+    let locations = getLocations();
     locations.forEach(cordinate_str => {
-        cordinate_lst = cordinate_str.split(',')
-        lat = parseFloat(cordinate_lst[0])
-        long = parseFloat(cordinate_lst[1])
-        cordinate = { lat: lat, lng: long };
+        let cordinate_lst = cordinate_str.split(',');
+        let lat = parseFloat(cordinate_lst[0]);
+        let lng = parseFloat(cordinate_lst[1]);
+        let cordinate = { lat, lng };
+
         new google.maps.Marker({
             position: cordinate,
             map: map,
-          });
+        });
     });
 }
 
-function getLocations(){
-    cords = []
-    doctors = document.querySelectorAll(".doctor")
+function getLocations() {
+    let cords = [];
+    let doctors = document.querySelectorAll(".doctorCords");
     doctors.forEach(doctor => {
-        cords.push(doctor.getAttribute("data-geo"))
+        cords.push(doctor.getAttribute("data-coordinates"));
     });
-    return cords
+    return cords;
 }
-
-$(function () {
-    var selectedDates = [];
-    datePicker = $('[id*=txtdate]').datepicker({
-        startDate: new Date(),
-        minDate: 0,
-        multidate: false,
-        format: "mm/dd/yyyy",
-        daysOfWeekHighlighted: "0,6",
-        language: 'en',
-        daysOfWeekDisabled: [0, 6]
-    });
-});
