@@ -86,7 +86,26 @@
           {% endif %}
         </div>
       </div>
-    </nav>
+    </nav> {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="mt-4 mx-4">
+      {% for category, message in messages %}
+        <div class="alert {{ category }}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %} 
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
     <!-- Main Content -->
     <div class="mt-10 flex justify-center">
         <div class="w-4/5 bg-gray-100 p-6 rounded-lg shadow-lg flex">
@@ -142,7 +161,7 @@
             </div>
 
             <!-- Google Map -->
-            <div class="mt-4 h-96 bg-gray-300 rounded-md shadow-md" id="map"></div>
+            <div class="mt-4 h-96 bg-gray-300 rounded-md shadow-md doctorCords" id="map" data-coordinates="{{ doctor.coordinates.latitude }},{{ doctor.coordinates.longitude }}"></div>
         </div>
 
         <!-- Calendar for Available Slots -->
@@ -167,7 +186,7 @@
     <script
       async
       defer
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBsJY7KojcXDneWqXV1h0J891NbgFrdglE&map_ids=122517338e1e4a8&callback=initMap"
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCL27RuRr9Z-AtwVnvYpET0rHTmYcR6IQ0&callback=initMap"
     ></script>
 
     <!-- JS to handle dropdown display -->
@@ -304,7 +323,6 @@
 
                   // Ask for confirmation
                   const isConfirmed = confirm(`Desea sacar su cita para el dia: ${formattedDate} a las ${formattedTime}?`);
-
                   if (isConfirmed) {
                       // Convert the selected date and time to epoch timestamp
                       const selectedEpoch = selectedDate.getTime() / 1000;

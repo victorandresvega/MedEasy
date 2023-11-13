@@ -14,6 +14,7 @@ from user import User
 from dotenv import load_dotenv
 from bson import ObjectId
 from datetime import datetime, timedelta
+import requests
 
 
 
@@ -74,7 +75,7 @@ def signinPOST():
         flash('Login successful!', 'success')
         return redirect(url_for('home'))
     else:
-        flash('Login unsuccessful. Check email and password', 'danger')
+        flash("Inicio de sesión fallido. Verifique el correo electrónico y la contraseña.", 'danger')
     return signinGET()
 
 
@@ -83,40 +84,47 @@ def signupGET():
     specialties = Doctor.medicalSpecialties
     medical_coverages = Doctor.medicalCoverages
     work_days = Doctor.daysWeek
+    municipalities = Doctor.municipalities
     
-    return render_template('signup.html', specialties=specialties, medical_coverages=medical_coverages, work_days= work_days)
+    return render_template('signup.html', specialties=specialties, medical_coverages=medical_coverages, work_days= work_days, municipalities=municipalities)
     
 @app.route('/signup', methods=['POST'])
 def signupPOST():
     account_type = request.form.get('accountType')
     email = request.form.get('email')
-
     # Check if the email already exists in the database
     existing_user = mongo.db["users"].find_one({"email": email})
-
     if existing_user:
-        flash('An account with that email already exists!', 'danger')
+        flash('Ya existe una cuenta con ese correo electrónico', 'danger')
         return signupGET()
 
     # Continue with the rest of the signup process if email is unique
     password = request.form.get('password')
-
     payload = {}
 
-    # Fields specific to the doctor role
+    # Fields specific to the patient role
     if account_type == "patient":
         payload["first_name"] = request.form.get('patient_first_name')
         payload["last_name"] = request.form.get('patient_last_name')
         payload["phone_number"] = request.form.get('patient_phone_number')
 
+    # Fields specific to the doctor role
     if account_type == "doctor":
         payload["first_name"] = request.form.get('first_name')
         payload["last_name"] = request.form.get('last_name')
+
+        # Concatenate the address line 1, pueblo (municipality), and zip code
+        address_line1 = request.form.get('address1')
+        pueblo = request.form.get('pueblo')
+        zip_code = request.form.get('zip_code')
+        full_address = f"{address_line1}, {pueblo}, Puerto Rico {zip_code}"
+        
+
+        payload["address"] = full_address
         payload["specialties"] = request.form.getlist('specialties[]')
-        payload["address"] = request.form.get('address')
         payload["medical_coverages"] = request.form.getlist('medical_coverages[]')
         payload["phone_number"] = request.form.get('phone_number')
-        
+
         schedule = {}
         schedule["work_days"] = request.form.getlist('work_days[]')
 
@@ -124,8 +132,14 @@ def signupPOST():
         schedule["clock_in"] = convert_to_24h(request.form.get('clock_in'))
         schedule["clock_out"] = convert_to_24h(request.form.get('clock_out'))
 
-        
         payload["schedule"] = schedule  # Add schedule to the payload
+
+        coordinates = {}
+        #Convert address string to coordinate values for use in the Map and return as a
+        #dictionary with keys "latitude" and "longitude"
+        coordinates = nominatim_geocoding(full_address)
+        
+        payload["coordinates"] = coordinates #add coordinates to payload
 
         photo_file = request.files.get('photo')
         if photo_file and photo_file.filename != '':
@@ -134,7 +148,7 @@ def signupPOST():
             encoded_photo = Photo.encodeImage(photo_path)
             os.remove(photo_path)
         else:
-            encoded_photo = Photo.encodeImage("https://freesvg.org/img/abstract-user-flat-4.png") #Default image
+            encoded_photo = Photo.encodeImage("https://freesvg.org/img/abstract-user-flat-4.png")  # Default image
 
         payload["photo"] = encoded_photo
 
@@ -144,22 +158,58 @@ def signupPOST():
 
     session['_id'] = created_user._id
     session['user_role'] = account_type
-    flash('Account created!', 'success')
+    flash('Cuenta creada exitosamente', 'success')
     return redirect(url_for('home'))
 
 def convert_to_24h(time_str):
-    """ Convert time from 12 hour format (with AM/PM) to 24 hour format """
+    """Convert time from 12-hour format (with AM/PM) to 24-hour format"""
     try:
         time_obj = datetime.strptime(time_str, '%I:%M %p')
         return time_obj.strftime('%H:%M')
     except:
         return time_str
+    
+#Function that accepts a string address and returns a dictionary containing the coordinates of the address,
+#to be used when a doctor first signs up to the site or when they modify their address information
+def nominatim_geocoding(address):
+    #Coordinates point to Null Island as the default value
+    coordinates = {
+        "latitude" : 0,
+        "longitude" : 0
+    }
+    #This function makes an HTTP request to the OpenStreetMap Nominatim to geocode the address of a doctor
+    #and return the coordinates 
+    endpoint = "https://nominatim.openstreetmap.org/search"
+
+    parameters = {"q": address, "format": "json"}
+
+    response = requests.get(endpoint, params=parameters)
+
+    # Check if the request was successful
+    if response.status_code == 200:
+        # Parse the JSON response
+        data = response.json()
+
+        if data:
+            # Extract the latitude and longitude from the response
+            lat = float(data[0]['lat'])
+            lon = float(data[0]['lon'])
+
+            coordinates["latitude"] = lat
+            coordinates["longitude"] = lon
+        else:
+            flash("No results found.")
+    else:
+        flash("Error: Unable to connect to Nominatim API.")
+    return coordinates
+
+
 
 
 @app.route('/signout')
 def signout():
     session.clear()
-    flash('You have been logged out successfully!', 'success')
+    flash('Su sesión ha cerrado exitosamente', 'success')
     return redirect(url_for('home'))
 
 
@@ -171,7 +221,7 @@ def profile():
 
 
     if not user:  
-        flash('User not found.', 'danger')
+        flash('Usuario no encontrado', 'danger')
         return redirect(url_for('home'))
 
     # Convert the epoch timestamp to date and time for each appointment
@@ -263,7 +313,7 @@ def profile():
 
 
     else:
-        flash('Invalid profile type.', 'danger')
+        flash('Tipo de perfil inválido', 'danger')
         return redirect(url_for('home'))
     
 def helper_getVal(field_name, form, payload):
@@ -301,7 +351,7 @@ def edit_profile():
     work_days = Doctor.daysWeek
 
     if not user:
-        flash('User not found.', 'danger')
+        flash('Usuario no encontrado', 'danger')
         return redirect(url_for('home'))
 
     if user.role == "doctor":
@@ -345,6 +395,9 @@ def edit_profile():
                 })
             else:
                 encoded_photo = user.payload.get("photo", None)
+            
+            #Location coordinates update
+            coordinates = nominatim_geocoding(address)
 
             updated_payload = {
                 "email": email,
@@ -352,14 +405,25 @@ def edit_profile():
                 "payload.last_name": last_name,
                 "payload.specialties": specialties,
                 "payload.address": address,
+                "payload.coordinates": coordinates,
                 "payload.phone_number": phone_number,
                 "payload.medical_coverages": medical_coverages,
                 "payload.schedule.work_days": work_days,
                 "payload.schedule.clock_in": clock_in_time,
                 "payload.schedule.clock_out": clock_out_time,
             }
-
             collection = mongo.db.users
+            # Check if email already exists in the database
+            existing_email = collection.find_one({"email": email})
+            if existing_email and str(existing_email['_id']) != str(user_id):
+                print(existing_phone['_id'], user_id)
+                flash("El correo electrónico ya está en uso", "error")  # Flash an error message
+                return redirect(request.url)  # Redirect back to the same page
+            existing_phone = collection.find_one({"payload.phone_number": phone_number})
+            if existing_phone and str(existing_phone['_id']) != str(user_id):
+                print(existing_phone['_id'], user_id)
+                flash("Número de teléfono ya está en uso", "error")  # Flash an error message
+                return redirect(request.url)  # Redirect back to the same page
             collection.update_one({"_id": ObjectId(user_id)}, {
                 "$set": updated_payload
             })
@@ -367,14 +431,14 @@ def edit_profile():
             return redirect(url_for('profile'))
 
         else:
-            # Convert clock_in and clock_out values to HH:MM format
-            clock_in_time = convert_to_24h(request.form.get('clock_in', user.payload.get('schedule', {}).get('clock_in', '00:00')))
-            clock_out_time = convert_to_24h(request.form.get('clock_out', user.payload.get('schedule', {}).get('clock_out', '00:00')))
+            # Retrieve current values for clock_in and clock_out
+            clock_in_time = user.payload.get('schedule', {}).get('clock_in', '09:00')
+            clock_out_time = user.payload.get('schedule', {}).get('clock_out', '17:00')
 
-
-        return render_template('editDoctor.html', doctor_email=user, doctor=user.payload,
-                       specialties=specialties, medical_coverages=medical_coverages, work_days=work_days,
-                       clock_in_time=clock_in_time, clock_out_time=clock_out_time)
+            # Render the form with the current values
+            return render_template('editDoctor.html', doctor_email=user, doctor=user.payload,
+                                   specialties=specialties, medical_coverages=medical_coverages, work_days=work_days,
+                                   clock_in_time=clock_in_time, clock_out_time=clock_out_time)
 
     elif user.role == "patient":
         if request.method == 'POST':
@@ -384,6 +448,17 @@ def edit_profile():
             phone_number = helper_getVal('phone_number', request.form, user.payload)
 
             collection = mongo.db.users
+            # Check if email already exists in the database
+            existing_email = collection.find_one({"email": email})
+            if existing_email and str(existing_email['_id']) != str(user_id):
+                flash("El correo electrónico ya está en uso.", "error")  # Flash an error message
+                return redirect(request.url)  # Redirect back to the same page
+            existing_phone = collection.find_one({"payload.phone_number": phone_number})
+            if existing_phone and str(existing_phone['_id']) != str(user_id):
+                print(existing_phone['_id'] != user_id)
+                print(existing_phone['_id'], user_id)
+                flash("Número de teléfono ya está en uso","error")  # Flash an error message
+                return redirect(request.url)  # Redirect back to the same page
             collection.update_one({"_id": ObjectId(user_id)}, {
                 "$set": {
                     "email": email,
@@ -398,7 +473,7 @@ def edit_profile():
         return render_template('editPatient.html', user=user)
 
     else:
-        flash('Invalid profile type.', 'danger')
+        flash('Tipo de perfil incorrecto', 'danger')
         return redirect(url_for('home'))
 
 def helper_getVal(field_name, form, payload):
@@ -440,7 +515,7 @@ def convert_to_24h(time_str):
 def schedule(doc_id):
     user = mongo.db.users.find_one({"_id": ObjectId(doc_id)})
     if not user:
-        flash('Doctor not found.', 'danger')
+        flash('No se ha encontrado ningun doctor', 'danger')
         return redirect(url_for('home'))
 
     doctor_data = user['payload']
@@ -463,9 +538,10 @@ def schedule(doc_id):
         clock_in_24 = convert_to_24h(doctor_data.get('schedule', {}).get('clock_in', '00:00'))
         clock_out_24 = convert_to_24h(doctor_data.get('schedule', {}).get('clock_out', '00:00'))
         work_days = [Doctor.day_to_fullcalendar_format(day) for day in  user['payload']['schedule'].get('work_days', [])]
+
+        coordinates = {"latitude" : doctor_data['coordinates']['latitude'], "longitude" : doctor_data['coordinates']['longitude']}
         
-        
-        return render_template("scheduling.html", doctor=doctor_data, time_slots=time_slots, clock_in_AmPm=clock_in_AmPm, clock_out_AmPm=clock_out_AmPm, clock_in_24=clock_in_24, clock_out_24=clock_out_24, work_days=work_days, doc_id=doc_id )
+        return render_template("scheduling.html", doctor=doctor_data, time_slots=time_slots, clock_in_AmPm=clock_in_AmPm, clock_out_AmPm=clock_out_AmPm, clock_in_24=clock_in_24, clock_out_24=clock_out_24, work_days=work_days, coordinates=coordinates, doc_id=doc_id)
 
     elif request.method == "POST":
         selectedEpoch = request.json['selectedEpoch']
@@ -559,7 +635,7 @@ def create_appointment():
     existing_appointment = mongo.db.appointments.find_one({"timestamp": selectedEpoch, "doctor_id": ObjectId(doc_id)})
     if existing_appointment:
         return jsonify({"success": False, "message": "Este espacio ya fue citado. Por favor elija otro espacio."})
-
+    
     # Otherwise, create the appointment
     appointment = {
         "doctor_id": ObjectId(doc_id),

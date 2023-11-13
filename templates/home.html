@@ -80,14 +80,24 @@
           {% endif %}
         </div>
       </div>
-    </nav>
+    </nav> {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="mt-4 mx-4">
+      {% for category, message in messages %}
+        <div class="alert {{ category }}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
 
         <!-- Main Content -->
-        <div class="flex mt-10 mx-10 h-[calc(100vh-60px)]">
+      <div class="flex mt-10 mx-10 h-[calc(100vh-60px)]">
 
         <!-- Search Form -->
         <form
-            class="w-1/3 p-8 bg-white shadow-md rounded-md overflow-y-auto flex flex-col" 
+            class="w-2/5 p-8 bg-white shadow-md rounded-md overflow-y-auto flex flex-col" 
             method="post"
             action="/home"
         >
@@ -143,20 +153,59 @@
     </div>
       </form>
 
-      <!-- Google Map -->
+      <div class="w-3/5 p-8 rounded-md ml-6">
+          <h1 class="text-5xl mb-8 font-semibold text-center">Acerca de Nosotros</h1>
+          <p class="text-gray-700 leading-relaxed mb-4 indent-paragraph text-center">
+            MedEasy es una plataforma diseñada para cerrar la brecha entre pacientes y médicos. Nuestra misión es simplificar el proceso de reserva de citas y facilitar a los pacientes la búsqueda de los mejores profesionales médicos ajustados a sus necesidades.Ya sea que estés buscando un médico general o un especialista, MedEasy ofrece perfiles médicos completos, disponibilidad en tiempo real y un sistema de reserva de citas intuitivo. Más allá de la utilidad, garantizamos un alto estándar de privacidad y seguridad de datos. Todos tus registros médicos e información personal están cifrados y almacenados de manera segura.
+          </p>
+          <div class="about-section my-6 p-4 rounded shadow-md">
+            <h2 class="text-3xl mt-8 mb-4 font-semibold text-center">¿Por Qué Elegirnos?
+            </h2>
+            <ul class="list-disc pl-8 mb-4">
+                <li class="mb-2">Interfaz amigable con navegación fluida.</li>
+                <li class="mb-2">Disponibilidad médica en tiempo real y reserva instantánea.</li>
+                <li class="mb-2">Perfiles médicos completos con reseñas de pacientes.</li>
+                <li class="mb-2">Almacenamiento seguro de información personal.</li>
+                <li class="mb-2">Soporte al cliente amigable siempre listo para ayudar.</li>
+            </ul>
+          </div>
+          <div class="about-section my-6 p-4 rounded shadow-md">
+            <h2 class="text-3xl mt-8 mb-4 font-semibold text-center">Nuestro Compromiso
+            </h2>
+            <p class="text-gray-700 leading-relaxed mb-4 indent-paragraph text-center">
+                Nacidos y criados en Puerto Rico, entendemos profundamente los desafíos que enfrenta nuestro sistema de salud. A través de MedEasy, no solo buscamos ofrecer una solución tecnológica, sino también contribuir al bienestar y salud de nuestra gente. Trabajamos con médicos y profesionales de salud de la isla, buscando constantemente maneras de mejorar y adaptar nuestra plataforma a las necesidades únicas de nuestra comunidad.
+            </p>
+          </div>
+          <div class="about-section my-6 p-4 rounded shadow-md">
+            <h2 class="text-3xl mt-8 mb-4 font-semibold text-center">Equipo de MedEasy
+            </h2>
+            <ul class="list-disc pl-8 mb-4">
+                <li class="mb-2"><strong>Carlos Rodríguez Sánchez</strong>: Con experiencia en planificación y documentación, Carlos lidera nuestra visión y estrategia.</li>
+                <li class="mb-2"><strong>Ricardo Rodríguez-González</strong>: Nuestro experto en diseño UI y UX, Ricardo asegura que tu experiencia en MedEasy sea fluida y agradable.</li>
+                <li class="mb-2"><strong>Victor Vega Ward</strong>: Como administrador de base de datos, Víctor garantiza la integridad y seguridad de toda la información que confías en nuestra plataforma.</li>
+            </ul>
+          </div>
+          <p class="text-gray-700 leading-relaxed mb-4 text-center">
+            Gracias por confiar en nosotros y ser parte de este viaje hacia un acceso a la salud más fácil y eficiente para todos en Puerto Rico.
+          </p>
+  
+          <h2 class="text-3xl mt-8 mb-4 font-semibold text-center">¡Bienvenido a MedEasy!
+          </h2>
+      </div>
+      <!-- Google Map 
       <div class="w-2/3 ml-10 h-[calc(100vh-60px)] flex-none">
           <div class="h-full bg-gray-300 rounded-md shadow-md" id="map"></div>
       </div>
-
-    <!-- JS Scripts -->
+-->
+   
     <script src="../static/js/script.js"></script>
-
+ <!-- JS Scripts 
     <script
       async
       defer
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBsJY7KojcXDneWqXV1h0J891NbgFrdglE&map_ids=122517338e1e4a8&callback=initMap"
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCL27RuRr9Z-AtwVnvYpET0rHTmYcR6IQ0&callback=initMap"
     ></script>
-
+-->
     <!-- JS to handle dropdown display -->
     <script>
       document

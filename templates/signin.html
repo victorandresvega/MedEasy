@@ -14,7 +14,17 @@
 </head>
 
 <body class="bg-gray-100 h-screen">
-
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="mt-4 mx-4">
+        {% for category, message in messages %}
+          <div class="alert {{ category }}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
     <div class="container mx-auto px-4 h-full">
 
         <!-- Navbar -->

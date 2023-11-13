@@ -68,7 +68,17 @@
           {% endif %}
         </div>
       </div>
-    </nav>
+    </nav> {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="mt-4 mx-4">
+      {% for category, message in messages %}
+        <div class="alert {{ category }}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
     <div class="mt-10 flex flex-col items-center">
         {% if doctor.photo %}
         <img src="data:image/jpeg;base64,{{ doctor.photo }}" alt="Imagen de Perfil" class="h-40 w-40 rounded-full border-4 border-indigo-400 mb-5">

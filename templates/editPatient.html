@@ -33,6 +33,7 @@
             href="/about"
             >Mas Informacion</a
           >
+ 
           {% if '_id' not in session %}
           <a
             class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded hover:bg-gray-200"
@@ -69,6 +70,15 @@
         </div>
       </div>
     </nav>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
         <form method="post" action="/profile/edit" class="container mx-auto mt-10 bg-white p-8 rounded-lg shadow-md w-3/4 md:w-1/2">
                 <!-- Email -->
                 <div class="mb-4">
