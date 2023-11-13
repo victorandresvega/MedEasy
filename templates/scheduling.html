@@ -202,105 +202,105 @@
     </script>
 
     <!-- Script to handle un-registered users. -->
-    <script>
-      const doctors = document.querySelectorAll('.doctor-link');
+<script>
+    const doctors = document.querySelectorAll('.doctor-link');
 
-      doctors.forEach(doc => {
-          doc.addEventListener('click', function(e) {
-              {% if not logged_in %}
-                  e.preventDefault();  // Stop the regular link behavior
-                  alert('Por favor inicie session para por sacar una cita.');
-              {% endif %}
-          });
-      });
-    </script>
+    doctors.forEach(doc => {
+        doc.addEventListener('click', function(e) {
+            {% if not logged_in %}
+                e.preventDefault();  // Stop the regular link behavior
+                alert('Por favor inicie sesión para sacar una cita.');
+            {% endif %}
+        });
+    });
+</script>
 
-    <!--FullCalendar JS-->
-    <script>
+<!-- FullCalendar JS -->
+<script>
     let selectedInfo = null; // Store the selected time slot temporarily
     let selectedEvent = null; // Store the visual representation of the selected slot
 
     document.addEventListener('DOMContentLoaded', function() {
-      var calendarEl = document.getElementById('calendar');
+        var calendarEl = document.getElementById('calendar');
 
-      // Get today's date
-      var today = new Date();
-      today.setHours(0, 0, 0, 0); // Set to start of the day
+        // Get today's date
+        var today = new Date();
+        today.setHours(0, 0, 0, 0); // Set to start of the day
 
-      var calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        headerToolbar: {
-          left: 'prev,next today',
-          center: 'title',
-          right: 'dayGridMonth',
-          },
-        navLinks: true,
-        selectable: true,
-        selectMirror: true,
-        dayMaxEvents: true,
-        eventColor: 'green',
-        allDaySlot: false,
-        slotMinTime: '{{ clock_in_24 }}',
-        slotMaxTime: '{{ clock_out_24 }}',
-        hiddenDays: [0, 1, 2, 3, 4, 5, 6].filter(day => !{{ work_days|tojson }}.includes(day)),
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth',
+            },
+            navLinks: true,
+            selectable: true,
+            selectMirror: true,
+            dayMaxEvents: true,
+            eventColor: 'green',
+            allDaySlot: false,
+            slotMinTime: '{{ clock_in_24 }}',
+            slotMaxTime: '{{ clock_out_24 }}',
+            hiddenDays: [0, 1, 2, 3, 4, 5, 6].filter(day => !{{ work_days|tojson }}.includes(day)),
 
-        buttonText: {
-          today: 'Hoy',
-          month: 'Mes',
-        },
+            buttonText: {
+                today: 'Hoy',
+                month: 'Mes',
+            },
 
-        locale: 'es',
+            locale: 'es',
 
-        validRange: {
-          start: today // Disallow dates before today
-        },
+            validRange: {
+                start: today // Disallow dates before today
+            },
 
-        eventTimeFormat: { 
-            hour: '2-digit', 
-            minute: '2-digit', 
-            meridiem: 'short' 
-        },
-        
-        selectOverlap: function(event) {
-            return event.rendering === 'background';  // This makes it so that only slots with background rendering (the green available slots) can be selected.
-        },
+            eventTimeFormat: { 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                meridiem: 'short' 
+            },
 
-        dateClick: function(info) {
-          calendar.changeView('timeGridDay', info.dateStr); 
-        },
+            selectOverlap: function(event) {
+                return event.rendering === 'background';  // This makes it so that only slots with background rendering (the green available slots) can be selected.
+            },
 
-                select: function(info) {
-                  if (calendar.view.type === 'timeGridDay') {
-                      // Remove previous green selection, if it exists
-                      if (selectedEvent) {
-                          selectedEvent.remove();
-                      }
+            dateClick: function(info) {
+                calendar.changeView('timeGridDay', info.dateStr); 
+            },
 
-                      // Store the info object temporarily
-                      selectedInfo = info;
-                      
-                      // Display the selected slot as a green event
-                      selectedEvent = calendar.addEvent({
-                          start: info.startStr,
-                          end: info.endStr,
-                          color: 'green',
-                          rendering: 'background',
-                          groupId: 'selectedSlot'
-                      });
-                      
-                      // Enable the 'Sacar Cita' button
-                      document.getElementById('bookAppointment').disabled = false;
-                  }
-              }
-          });
+            select: function(info) {
+                if (calendar.view.type === 'timeGridDay') {
+                    // Remove previous green selection, if it exists
+                    if (selectedEvent) {
+                        selectedEvent.remove();
+                    }
 
-          calendar.render();
+                    // Store the info object temporarily
+                    selectedInfo = info;
 
-          // Fetch and add booked slots to the calendar
-          fetch('/schedule_events/{{ doc_id }}')
-              .then(response => response.json())
-              .then(events => {
-                  events.forEach(event => {
+                    // Display the selected slot as a green event
+                    selectedEvent = calendar.addEvent({
+                        start: info.startStr,
+                        end: info.endStr,
+                        color: 'green',
+                        rendering: 'background',
+                        groupId: 'selectedSlot'
+                    });
+
+                    // Enable the 'Sacar Cita' button
+                    document.getElementById('bookAppointment').disabled = false;
+                }
+            }
+        });
+
+        calendar.render();
+
+        // Fetch and add booked slots to the calendar
+        fetch('/schedule_events/{{ doc_id }}')
+            .then(response => response.json())
+            .then(events => {
+                events.forEach(event => {
                     if (event.color === "red") {
                         event.editable = false; 
                         event.selectable = false;
@@ -311,65 +311,129 @@
                         event.title = `${startTime}-${endTime}`;
                     }
                 });
-                  calendar.addEventSource(events);
-              });
+                calendar.addEventSource(events);
+            });
 
-          document.getElementById('bookAppointment').addEventListener('click', function() {
-              if (selectedInfo) {
-                  // Format the date and time
-                  const selectedDate = new Date(selectedInfo.startStr);
-                  const formattedDate = selectedDate.toLocaleDateString();
-                  const formattedTime = selectedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('bookAppointment').addEventListener('click', function() {
+            checkAndCreateAppointment();
+        });
+    });
+</script>
 
-                  // Ask for confirmation
-                  const isConfirmed = confirm(`Desea sacar su cita para el dia: ${formattedDate} a las ${formattedTime}?`);
-                  if (isConfirmed) {
-                      // Convert the selected date and time to epoch timestamp
-                      const selectedEpoch = selectedDate.getTime() / 1000;
+<!-- JavaScript functions for handling appointment creation/modification -->
+<script>
+function checkAndCreateAppointment() {
+        if (selectedInfo) {
+            const selectedDate = new Date(selectedInfo.startStr);
+            const currentDateTime = new Date();
 
-                      // Send the data to the server to store the appointment
-                      fetch("/create_appointment", {
-                          method: "POST",
-                          headers: {
-                              'Content-Type': 'application/json'
-                          },
-                          body: JSON.stringify({
-                              selectedEpoch: selectedEpoch,
-                              doc_id: '{{ doc_id }}'
-                          })
-                      })
-                      .then(response => response.json())
-                      .then(data => {
-                          if (data.success) {
-                              // Remove the green event
-                              if (selectedEvent) {
-                                  selectedEvent.remove();
-                                  selectedEvent = null;
-                              }
+            if (selectedDate < currentDateTime) {
+                alert("No puede programar una cita en horario que ya pasó.");
+                return;
+            }
 
-                              // Add the event to the calendar
-                              calendar.addEvent({
-                                  id: data.eventId,
-                                  start: new Date(selectedInfo.startStr),
-                                  end: new Date(selectedInfo.endStr),
-                                  color: 'red',
-                                  editable: false,
-                                  selectable: false
-                              });
+            fetch("/check_existing_appointment", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    selectedEpoch: selectedDate.getTime() / 1000,
+                    doc_id: '{{ doc_id }}',
+                }),
+            })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.hasExistingAppointment) {
+                    const isConfirmed = confirm(
+                        `Usted ya tiene una cita con el Dr. ${data.doctorName} programada para el día: ${data.existingAppointment.timestamp}. ¿Desea cambiar su cita para el dia ${selectedDate.toLocaleDateString()} a las ${selectedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}?`
+                    );
 
-                              alert(data.message);
-                          } else {
-                              alert(data.message);
-                          }
-                      });
-                      
-                      // Reset the selectedInfo and disable the button
-                      selectedInfo = null;
-                      document.getElementById('bookAppointment').disabled = true;
-                  }
-              }
-          });
-      });
-      </script>
+                    if (isConfirmed) {
+                        fetch("/modify_appointment", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                appointment_id: data.existingAppointment._id,
+                                selectedEpoch: selectedDate.getTime() / 1000,
+                            }),
+                        })
+                        .then((response) => response.json())
+                        .then((response) => {
+                            if (response.success) {
+                                if (selectedEvent) {
+                                    selectedEvent.remove();
+                                    selectedEvent = null;
+                                }
+                                location.reload();
+                                calendar.addEvent({
+                                    id: data.existingAppointment._id,
+                                    start: new Date(selectedInfo.startStr),
+                                    end: new Date(selectedInfo.endStr),
+                                    color: "red",
+                                    editable: false,
+                                    selectable: false,
+                                });
+                                alert(response.message);
+                            } else {
+                                alert(response.message);
+                            }
+                        });
+                    }
+                } else {
+                    // Create a new appointment
+                    createNewAppointment(selectedDate);
+                }
+            });
+        }
+    }
+
+    function createNewAppointment(selectedDate) {
+        const isConfirmed = confirm(
+            `Desea sacar su cita para el día: ${selectedDate.toLocaleDateString()} a las ${selectedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}?`
+        );
+
+        if (isConfirmed) {
+            const selectedEpoch = selectedDate.getTime() / 1000;
+
+            fetch("/create_appointment", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    selectedEpoch: selectedEpoch,
+                    doc_id: '{{ doc_id }}',
+                }),
+            })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.success) {
+                    if (selectedEvent) {
+                        selectedEvent.remove();
+                        selectedEvent = null;
+                    }
+                    location.reload();
+                    calendar.addEvent({
+                        id: data.eventId,
+                        start: new Date(selectedInfo.startStr),
+                        end: new Date(selectedInfo.endStr),
+                        color: "red",
+                        editable: false,
+                        selectable: false,
+                    });
+                    alert(data.message);
+                } else {
+                    alert(data.message);
+                }
+            });
+
+            selectedInfo = null;
+            document.getElementById('bookAppointment').disabled = true;
+        }
+    }
+</script>
 </body>
 </html>
