@@ -125,7 +125,11 @@
                             Dr. {{ doctor.first_name }} {{ doctor.last_name }}
                         </h2>
                         <p class="text-gray-600">
-                            {% for specialty in doctor.specialties %} {{ specialty }} {% endfor %}
+                            {% if doctor.specialties %}
+                                {{ doctor.specialties|join(', ') }}
+                            {% else %}
+                                N/A
+                            {% endif %}
                         </p>
                     </div>
                 </div>
@@ -142,6 +146,18 @@
                         <span class="font-medium text-lg"><strong>Telefono:</strong></span>
                         <p>{{ doctor.phone_number }}</p>
                     </div>
+                    
+                    <!-- Medical Coverages -->
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="font-medium text-lg"><strong>Planes Medicos:</strong></span>
+                        <p>
+                            {% if doctor.medical_coverages %}
+                                {{ doctor.medical_coverages|join(', ') }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </p>
+                    </div>
 
                     <!-- Scheduling Information -->
                     <div class="flex justify-between items-center mb-4">
@@ -149,12 +165,8 @@
                         <p>{{ doctor.schedule.work_days|default([])|join(', ') }}</p>
                     </div>
                     <div class="flex justify-between items-center mb-4">
-                        <p class="font-medium text-lg"><strong>Hora de Entrada:</strong></p>
-                        <p>{{ clock_in_AmPm|default('N/A') }}</p>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <p class="font-medium text-lg"><strong>Hora de Salida:</strong></p>
-                        <p>{{ clock_out_AmPm|default('N/A') }}</p>
+                        <p class="font-medium text-lg"><strong>Horarios Disponibles:</strong></p>
+                        <p>{{ clock_in_AmPm|default('N/A') }} - {{ clock_out_AmPm|default('N/A') }}</p>
                     </div>
 
                 </div>
