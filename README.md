@@ -1,6 +1,6 @@
 # MedEasy
 
-![App Logo](path-to-app-logo.png)
+![App Logo](https://github.com/victorandresvega/MedEasy/blob/master/static/img/MedEasyLogo.png)
 
 MedEasy is an web-based platform designed for the healthcare sector in Puerto Rico. Designed to streamline the medical appointment scheduling process, it integrates telemedicine capabilities, allowing patients to conveniently search for doctors across various specialties, view their availability, and book appointments. By addressing the island's unique healthcare challenges, such as extended waiting times and complicated administrative procedures, MedEasy offers a user-centric solution. While it provides patients with a smoother healthcare journey, it also emphasizes resource efficiency for medical establishments, ensuring a holistic approach to healthcare delivery, all within a secure digital environment compliant with HIPAA standards.
 
