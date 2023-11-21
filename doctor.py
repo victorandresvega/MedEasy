@@ -91,6 +91,19 @@ class Doctor:
                         result.append(doctor)
         return result
     
+    @staticmethod
+    def get_doctor_coordinates(doctors):
+        coordinates = []
+
+        for doctor in doctors:
+            if 'payload' in doctor and 'coordinates' in doctor['payload']:
+                coordinates.append({
+                    'latitude': doctor['payload']['coordinates']['latitude'],
+                    'longitude': doctor['payload']['coordinates']['longitude']
+                })
+
+        return coordinates
+    
     def get_time_slots(self):
         slots = []
         clock_in = datetime.strptime(self.schedule["clock_in"], '%H:%M')

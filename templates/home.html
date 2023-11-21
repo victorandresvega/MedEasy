@@ -153,59 +153,45 @@
     </div>
       </form>
 
-      <div class="w-3/5 p-8 rounded-md ml-6">
-          <h1 class="text-5xl mb-8 font-semibold text-center">Acerca de Nosotros</h1>
-          <p class="text-gray-700 leading-relaxed mb-4 indent-paragraph text-center">
-            MedEasy es una plataforma diseñada para cerrar la brecha entre pacientes y médicos. Nuestra misión es simplificar el proceso de reserva de citas y facilitar a los pacientes la búsqueda de los mejores profesionales médicos ajustados a sus necesidades.Ya sea que estés buscando un médico general o un especialista, MedEasy ofrece perfiles médicos completos, disponibilidad en tiempo real y un sistema de reserva de citas intuitivo. Más allá de la utilidad, garantizamos un alto estándar de privacidad y seguridad de datos. Todos tus registros médicos e información personal están cifrados y almacenados de manera segura.
-          </p>
-          <div class="about-section my-6 p-4 rounded shadow-md">
-            <h2 class="text-3xl mt-8 mb-4 font-semibold text-center">¿Por Qué Elegirnos?
-            </h2>
-            <ul class="list-disc pl-8 mb-4">
-                <li class="mb-2">Interfaz amigable con navegación fluida.</li>
-                <li class="mb-2">Disponibilidad médica en tiempo real y reserva instantánea.</li>
-                <li class="mb-2">Perfiles médicos completos con reseñas de pacientes.</li>
-                <li class="mb-2">Almacenamiento seguro de información personal.</li>
-                <li class="mb-2">Soporte al cliente amigable siempre listo para ayudar.</li>
-            </ul>
-          </div>
-          <div class="about-section my-6 p-4 rounded shadow-md">
-            <h2 class="text-3xl mt-8 mb-4 font-semibold text-center">Nuestro Compromiso
-            </h2>
-            <p class="text-gray-700 leading-relaxed mb-4 indent-paragraph text-center">
-                Nacidos y criados en Puerto Rico, entendemos profundamente los desafíos que enfrenta nuestro sistema de salud. A través de MedEasy, no solo buscamos ofrecer una solución tecnológica, sino también contribuir al bienestar y salud de nuestra gente. Trabajamos con médicos y profesionales de salud de la isla, buscando constantemente maneras de mejorar y adaptar nuestra plataforma a las necesidades únicas de nuestra comunidad.
-            </p>
-          </div>
-          <div class="about-section my-6 p-4 rounded shadow-md">
-            <h2 class="text-3xl mt-8 mb-4 font-semibold text-center">Equipo de MedEasy
-            </h2>
-            <ul class="list-disc pl-8 mb-4">
-                <li class="mb-2"><strong>Carlos Rodríguez Sánchez</strong>: Con experiencia en planificación y documentación, Carlos lidera nuestra visión y estrategia.</li>
-                <li class="mb-2"><strong>Ricardo Rodríguez-González</strong>: Nuestro experto en diseño UI y UX, Ricardo asegura que tu experiencia en MedEasy sea fluida y agradable.</li>
-                <li class="mb-2"><strong>Victor Vega Ward</strong>: Como administrador de base de datos, Víctor garantiza la integridad y seguridad de toda la información que confías en nuestra plataforma.</li>
-            </ul>
-          </div>
-          <p class="text-gray-700 leading-relaxed mb-4 text-center">
-            Gracias por confiar en nosotros y ser parte de este viaje hacia un acceso a la salud más fácil y eficiente para todos en Puerto Rico.
-          </p>
-  
-          <h2 class="text-3xl mt-8 mb-4 font-semibold text-center">¡Bienvenido a MedEasy!
-          </h2>
-      </div>
-      <!-- Google Map 
+      <!-- Google Map -->
       <div class="w-2/3 ml-10 h-[calc(100vh-60px)] flex-none">
           <div class="h-full bg-gray-300 rounded-md shadow-md" id="map"></div>
       </div>
--->
    
     <script src="../static/js/script.js"></script>
- <!-- JS Scripts 
+
+    <script>
+        function initMap() {
+            let defaultCenter = { lat: 18.200178, lng: -66.44513 };
+            let defaultZoom = 10;
+
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: defaultCenter,
+                zoom: defaultZoom,
+                mapId: '122517338e1e4a8'
+            });
+
+            let doctorCoordinates = {{ coordinates | tojson | safe }};
+
+            doctorCoordinates.forEach(coordinates => {
+                let { latitude, longitude } = coordinates;
+                let doctorLocation = { lat: latitude, lng: longitude };
+
+                new google.maps.Marker({
+                    position: doctorLocation,
+                    map: map,
+                });
+            });
+        }
+    </script>
+    
+    <!-- JS Scripts -->
     <script
       async
       defer
       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCL27RuRr9Z-AtwVnvYpET0rHTmYcR6IQ0&callback=initMap"
     ></script>
--->
+
     <!-- JS to handle dropdown display -->
     <script>
       document
