@@ -240,6 +240,8 @@ def profile():
     user_id = session.get('_id', None)
     user = User.get_user_by_id(user_id, mongo.db)
     user_appointments = list(mongo.db.appointments.find({"patient_id": ObjectId(user_id)}))
+    #retrieves a list of all the notifications a user currently has in the database
+    user_notifications = list(mongo.db.notifications.find({"recipient_id": ObjectId(user_id)}))
 
 
     if not user:  
@@ -676,7 +678,20 @@ def create_appointment():
             "timestamp": selectedEpoch
         }
 
+        #Send a notification to the doctor that an appointment was created
+        patient_data = mongo.db.users.find_one({"_id": ObjectId(patient_id)})
+        notification = {
+            "type": "New Appointment Created",
+            "recipient_id": ObjectId(doc_id),
+            "sender_id": ObjectId(patient_id),
+            "sender_name": patient_data["payload"]["first_name"] + " " + patient_data["payload"]["last_name"],
+            "sender_phone_number": patient_data["payload"]["phone_number"],
+            "appointment_time": selectedEpoch,
+            "isDeleted": False
+        }
+
         mongo.db.appointments.insert_one(appointment)
+        mongo.db.notifications.insert_one(notification)
         return jsonify({"success": True, "message": "Su nueva cita ha sido programada exitosamente!"})
 
 @app.route("/check_existing_appointment", methods=["POST"])
@@ -719,6 +734,7 @@ def modify_appointment():
     selectedEpoch = data['selectedEpoch']
     patient_id = session.get('_id', None)
 
+
     if not patient_id:
         return jsonify({"success": False, "message": "Debe iniciar sesión como paciente para acceder."})
 
@@ -736,6 +752,22 @@ def modify_appointment():
             "timestamp": selectedEpoch
         }
     })
+
+    appointment_data = mongo.db.appointments.find_one({"_id": ObjectId(appointment_id)})
+    doc_id = appointment_data["doctor_id"]
+
+    #Send a notification to the doctor that an appointment was modified
+    patient_data = mongo.db.users.find_one({"_id": ObjectId(patient_id)})
+    notification = {
+        "type": "Appointment Modified",
+        "recipient_id": ObjectId(doc_id),
+        "sender_id": ObjectId(patient_id),
+        "sender_name": patient_data["payload"]["first_name"] + " " + patient_data["payload"]["last_name"],
+        "sender_phone_number": patient_data["payload"]["phone_number"],
+        "appointment_time": selectedEpoch,
+        "isDeleted": False
+    }
+    mongo.db.notifications.insert_one(notification)
 
     return jsonify({"success": True, "message": "Su cita ha sido modificada exitosamente."})
 
