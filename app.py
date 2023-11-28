@@ -96,7 +96,7 @@ def signinPOST():
         session["_id"] = str(user["_id"])
         session['user_role'] = user["role"]
 
-        flash('Login successful!', 'success')
+        flash('Su sesión ha inicida exitosamente!', 'success')
         return redirect(url_for('home'))
     else:
         flash("Inicio de sesión fallido. Verifique el correo electrónico y la contraseña.", 'danger')
@@ -222,7 +222,7 @@ def nominatim_geocoding(address):
             coordinates["latitude"] = lat
             coordinates["longitude"] = lon
         else:
-            flash("No results found.")
+            flash("Error")
     else:
         flash("Error: Unable to connect to Nominatim API.")
     return coordinates
@@ -367,17 +367,20 @@ def convert_to_24h(time_str):
 def edit_profile():
     user_id = session.get('_id', None)
     user = User.get_user_by_id(user_id, mongo.db)
-    
+    municipalities = Doctor.municipalities
     specialties = Doctor.medicalSpecialties
     medical_coverages = Doctor.medicalCoverages
     work_days = Doctor.daysWeek
+    phys_address = ""
+    pueblo = ""
+    zip_code = ""
 
     if not user:
         flash('Usuario no encontrado', 'danger')
         return redirect(url_for('home'))
 
     if user.role == "doctor":
-        
+        splitted_address = ''
         # Check if scheduling values are missing and set them to default values
         if 'schedule' not in user.payload:
             user.payload['schedule'] = {
@@ -385,7 +388,14 @@ def edit_profile():
                 "clock_in": "09:00",       # Default clock in: 9:00 AM
                 "clock_out": "17:00"       # Default clock out: 5:00 PM
             }
-        
+        address = user.payload["address"]
+        splitted_address = address.split(",")
+        phys_address = ','.join(splitted_address[0:-2])
+        pueblo = splitted_address[-2]
+        zip_code = splitted_address[-1][12:]
+        print(phys_address)
+        print(zip_code)
+        print(pueblo)
         if request.method == 'POST':
             email = request.form.get('email', user.email)
             first_name = helper_getVal('first_name', request.form, user.payload)
@@ -394,13 +404,13 @@ def edit_profile():
             phone_number = helper_getVal('phone_number', request.form, user.payload)
             specialties = helper_getValList('specialties[]', request.form, user.payload)
             medical_coverages = helper_getValList('medical_coverages[]', request.form, user.payload)
-            
+
             # Get clock_in and clock_out values directly from the payload
             clock_in_time = convert_to_24h(request.form.get('clock_in'))
             clock_out_time = convert_to_24h(request.form.get('clock_out'))
 
             work_days = request.form.getlist('work_days[]')
-
+            full_address = str(request.form.get('address')) + ", " + str(request.form.get('pueblo')) + ", Puerto Rico " + str(request.form.get('zip_code'))
             # Photo handling
             photo_file = request.files.get('photo')
             if photo_file and photo_file.filename != '':
@@ -420,13 +430,12 @@ def edit_profile():
             
             #Location coordinates update
             coordinates = nominatim_geocoding(address)
-
             updated_payload = {
                 "email": email,
                 "payload.first_name": first_name,
                 "payload.last_name": last_name,
                 "payload.specialties": specialties,
-                "payload.address": address,
+                "payload.address": full_address,
                 "payload.coordinates": coordinates,
                 "payload.phone_number": phone_number,
                 "payload.medical_coverages": medical_coverages,
@@ -456,11 +465,11 @@ def edit_profile():
             # Retrieve current values for clock_in and clock_out
             clock_in_time = user.payload.get('schedule', {}).get('clock_in', '09:00')
             clock_out_time = user.payload.get('schedule', {}).get('clock_out', '17:00')
-
+            print(f'phys_address: {phys_address}')
             # Render the form with the current values
             return render_template('editDoctor.html', doctor_email=user, doctor=user.payload,
                                    specialties=specialties, medical_coverages=medical_coverages, work_days=work_days,
-                                   clock_in_time=clock_in_time, clock_out_time=clock_out_time)
+                                   clock_in_time=clock_in_time, clock_out_time=clock_out_time, municipalities=municipalities, pueblo=pueblo, phys_address=phys_address, zip_code=zip_code)
 
     elif user.role == "patient":
         if request.method == 'POST':
