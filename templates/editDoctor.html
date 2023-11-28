@@ -89,9 +89,43 @@
             <!-- Address -->
             <div class="mb-4">
                 <label for="address" class="block mb-2 font-medium">Localizacion:</label>
-                <input type="text" name="address" value="{{ doctor.address }}" required class="w-full p-2 border rounded-md">
+                <input type="text" name="address" value="{{ phys_address}}" required class="w-full p-2 border rounded-md">
             </div>
-
+            <div class="mb-4">
+              <label for="pueblo">Pueblo:</label>
+              <div class="dropdown-pueblo relative">
+                <button type="button" class="w-full bg-gray-200 text-left px-4 py-2 rounded border focus:outline-none focus:ring" id="dropdownButtonPueblo">
+                  {{pueblo}}
+                  <span class="material-icons absolute right-3 top-1/2 transform -translate-y-1/2">keyboard_arrow_down</span>
+                </button>
+                <div class="dropdown-menu-pueblo absolute w-full mt-2 hidden border rounded bg-white shadow-md z-10" style="max-height: 150px; overflow-y: auto;">
+                  <!-- Pueblo checkbox options -->
+                  <input type="hidden" name="pueblo" id="hiddenPuebloInput" value="{{ pueblo }}">
+                  {% for municipality in municipalities %}
+                    <label class="block px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                      <input type="checkbox" name="pueblo" value="{{ municipality }}" class="mr-2" 
+                      {% if municipality == pueblo %} checked {% endif %}  />
+                      {{ municipality }}
+                    </label>
+                  {% endfor %}
+                  
+                </div>
+              </div>
+            </div>
+            <div class="mb-4">
+                <label for="zip_code">Zip Code:</label>
+                
+                <input
+                    type="text"
+                    id="zip_code"
+                    name="zip_code"
+                    {% if doctor.address %}
+                    value = {{zip_code}}
+                    {% endif %}
+                    required
+                    class="w-full p-2 border rounded-md"
+                />
+            </div>
             <!-- Phone Number -->
             <div class="mb-4">
                 <label for="phone_number" class="block mb-2 font-medium">Telefono:</label>
@@ -176,5 +210,84 @@
             dropdown.style.display = "none";
         }
     }
+    document
+        .getElementById("dropdownButtonPueblo")
+        .addEventListener("click", function () {
+          const menu = document.querySelector(".dropdown-menu-pueblo");
+          menu.classList.toggle("hidden");
+
+          // Update arrow icon
+          const icon = this.querySelector(".material-icons");
+          if (menu.classList.contains("hidden")) {
+            icon.textContent = "keyboard_arrow_down";
+          } else {
+            icon.textContent = "keyboard_arrow_up";
+          }
+        });
+
+      const puebloCheckboxes = document.querySelectorAll(".dropdown-menu-pueblo input[type='checkbox']");
+      puebloCheckboxes.forEach((checkbox) => {
+        checkbox.addEventListener("change", function () {
+            // Uncheck all other checkboxes
+            puebloCheckboxes.forEach((cbox) => {
+                if (cbox !== checkbox) {
+                    cbox.checked = false;
+                }
+            });
+    
+            updatePuebloButtonText();
+        });
+    });
+    
+
+    function updatePuebloButtonText() {
+      let selectedValue = null;
+      puebloCheckboxes.forEach((cbox) => {
+          if (cbox.checked) {
+              selectedValue = cbox.value;
+          }
+      });
+  
+      const defaultValue = "{{ pueblo }}"; // Use the value passed from Python
+      selectedValue = selectedValue || defaultValue;
+  
+      document.getElementById("dropdownButtonPueblo").textContent =
+          selectedValue !== null ? selectedValue : "Choose a Pueblo";
+  
+      // Update the hidden input field
+      document.getElementById("hiddenPuebloInput").value = selectedValue;
+  }
+  
+  // Initialize with the current value on page load
+  updatePuebloButtonText();
+
+      // Clicking outside of the "Pueblo" dropdown should close it
+      document.addEventListener("click", function (event) {
+        const dropdown = document.querySelector(".dropdown-menu-pueblo");
+        const button = document.getElementById("dropdownButtonPueblo");
+        if (!button.contains(event.target) && !dropdown.contains(event.target)) {
+          dropdown.classList.add("hidden");
+          button.querySelector(".material-icons").textContent = "keyboard_arrow_down";
+        }
+      });
+
+
+      // Clicking outside of dropdowns should close them
+      document.addEventListener("click", function (event) {
+        ["Specialties", "MedicalCoverages", "WorkDays"].forEach((type) => {
+          const dropdown = document.querySelector(
+            `.dropdown-menu-${type.toLowerCase()}`
+          );
+          const button = document.getElementById(`dropdownButton${type}`);
+          if (
+            !button.contains(event.target) &&
+            !dropdown.contains(event.target)
+          ) {
+            dropdown.classList.add("hidden");
+            button.querySelector(".material-icons").textContent =
+              "keyboard_arrow_down";
+          }
+        });
+      });
 </script>
 </html>
