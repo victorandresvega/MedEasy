@@ -128,7 +128,7 @@
                             {% if doctor.specialties %}
                                 {{ doctor.specialties|join(', ') }}
                             {% else %}
-                                N/A
+                                Generalista
                             {% endif %}
                         </p>
                     </div>
@@ -154,7 +154,7 @@
                             {% if doctor.medical_coverages %}
                                 {{ doctor.medical_coverages|join(', ') }}
                             {% else %}
-                                N/A
+                                No Acepta Planes Medicos
                             {% endif %}
                         </p>
                     </div>
@@ -162,7 +162,13 @@
                     <!-- Scheduling Information -->
                     <div class="flex justify-between items-center mb-4">
                         <p class="font-medium text-lg"><strong>Dias Disponibles:</strong></p>
-                        <p>{{ doctor.schedule.work_days|default([])|join(', ') }}</p>
+                        <p>
+                            {% if doctor.schedule.work_days %}
+                                {{ doctor.schedule.work_days|join(', ') }}
+                            {% else %}
+                                No ha determinado días disponibles
+                            {% endif %}
+                        </p>
                     </div>
                     <div class="flex justify-between items-center mb-4">
                         <p class="font-medium text-lg"><strong>Horarios Disponibles:</strong></p>
