@@ -7,6 +7,7 @@ from flask_pymongo import PyMongo
 from flask_bcrypt import Bcrypt
 from appointment import Appointment
 from doctor import Doctor
+from notification import Notification
 from patient import Patient
 from event import Event
 from photo import Photo
@@ -57,6 +58,23 @@ def cancel_overdue_appointments():
 
 # Schedule the job to run every hour
 scheduler.add_job(func=cancel_overdue_appointments, trigger=CronTrigger.from_crontab('0 * * * *'), id='cancel_overdue_appointments')
+
+#Function to check which appointments are scheduled in 24 hours and send the notifications
+def day_before_reminder():
+    current_time = datetime.now()
+    twenty_four_hours_in_future = current_time + timedelta(hours=24)
+    twenty_four_hours_in_future_epoch = twenty_four_hours_in_future.timestamp()
+
+    appointments_to_notify = mongo.db.appointments.find({"timestamp": twenty_four_hours_in_future_epoch})
+
+    for appointment in appointments_to_notify:
+        #Send reminder notifications to both the patient and the doctor
+        doctor_reminder = Notification.createNotification(appointment["doctor_id"], appointment["patient_id"], "Twenty four hours till appointment", appointment["timestamp"], mongo.db)
+        patient_reminder = Notification.createNotification(appointment["patient_id"], appointment["doctor_id"], "Twenty four hours till appointment", appointment["timestamp"], mongo.db)
+
+#Schedule the job to run every half hour (due to the fact appointments are booked in 30 minute time slots)
+scheduler.add_job(func=day_before_reminder, trigger=CronTrigger.from_crontab('*/30 * * * *'), id='day_before_reminder')
+
 
 @app.route("/", methods=["GET", "POST"])
 @app.route("/home", methods=["GET", "POST"])
@@ -305,7 +323,7 @@ def profile():
         clock_in_time = convert_to_am_pm(user.payload['schedule'].get('clock_in', '00:00'))
         clock_out_time = convert_to_am_pm(user.payload['schedule'].get('clock_out', '00:00'))
 
-        return render_template('doctor.html', doctor_email=user, doctor=user.payload, photo=photo_data, clock_in_time=clock_in_time, clock_out_time=clock_out_time, doc_id=user_id)
+        return render_template('doctor.html', doctor_email=user, doctor=user.payload, photo=photo_data, clock_in_time=clock_in_time, clock_out_time=clock_out_time, doc_id=user_id, notifications = user_notifications)
 
 
 
@@ -331,7 +349,7 @@ def profile():
             user = User.get_user_by_id(user_id, mongo.db)
 
 
-        return render_template('patient.html', user=user, appointments=user_appointments)
+        return render_template('patient.html', user=user, appointments=user_appointments, notifications = user_notifications)
 
 
     else:
@@ -679,19 +697,10 @@ def create_appointment():
         }
 
         #Send a notification to the doctor that an appointment was created
-        patient_data = mongo.db.users.find_one({"_id": ObjectId(patient_id)})
-        notification = {
-            "type": "New Appointment Created",
-            "recipient_id": ObjectId(doc_id),
-            "sender_id": ObjectId(patient_id),
-            "sender_name": patient_data["payload"]["first_name"] + " " + patient_data["payload"]["last_name"],
-            "sender_phone_number": patient_data["payload"]["phone_number"],
-            "appointment_time": selectedEpoch,
-            "isDeleted": False
-        }
+        Notification.createNotification(doc_id, patient_id, "Appointment Created", selectedEpoch, mongo.db)
 
+        
         mongo.db.appointments.insert_one(appointment)
-        mongo.db.notifications.insert_one(notification)
         return jsonify({"success": True, "message": "Su nueva cita ha sido programada exitosamente!"})
 
 @app.route("/check_existing_appointment", methods=["POST"])
@@ -757,26 +766,32 @@ def modify_appointment():
     doc_id = appointment_data["doctor_id"]
 
     #Send a notification to the doctor that an appointment was modified
-    patient_data = mongo.db.users.find_one({"_id": ObjectId(patient_id)})
-    notification = {
-        "type": "Appointment Modified",
-        "recipient_id": ObjectId(doc_id),
-        "sender_id": ObjectId(patient_id),
-        "sender_name": patient_data["payload"]["first_name"] + " " + patient_data["payload"]["last_name"],
-        "sender_phone_number": patient_data["payload"]["phone_number"],
-        "appointment_time": selectedEpoch,
-        "isDeleted": False
-    }
-    mongo.db.notifications.insert_one(notification)
+    notification = Notification.createNotification(doc_id, patient_id, 'Appointment Modified by Patient', selectedEpoch, mongo.db)
 
     return jsonify({"success": True, "message": "Su cita ha sido modificada exitosamente."})
 
 
 @app.route('/cancel_appointment/<appointment_id>', methods=['POST'])
 def cancel_appointment(appointment_id):
+    #Retrieve appointment data before deletion for use in notification
+    appointment_data = mongo.db.appointments.find_one({"_id": ObjectId(appointment_id)})
+    
     result = mongo.db.appointments.delete_one({"_id": ObjectId(appointment_id)})
     
     if result.deleted_count > 0:
+        #Send notification to the doctor that the appointment was successfully deleted
+        notification = Notification.createNotification(appointment_data["doctor_id"], appointment_data["patient_id"], "Appointment Deleted by Patient", appointment_data["timestamp"], mongo.db)
+
         return jsonify({"success": True, "message": "Cita cancelada exitosamente."})
     else:
         return jsonify({"success": False, "message": "No se pudo cancelar la cita."})
+
+@app.route('/delete_notification/<notification_id>', methods=['POST'])
+def delete_notification(notification_id):
+
+    result = mongo.db.notifications.delete_one({"_id": ObjectId(notification_id)})
+
+    if result.deleted_count > 0:
+        return jsonify({"success": True, "message": "Notificacion borrada."})
+    else:
+        return jsonify({"success": False, "message": "No se pudo borrar la notificacion."})

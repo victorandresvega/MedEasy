@@ -156,6 +156,35 @@
             <div id="doctorAppointmentsCalendar" class="w-full"></div>
         </div>
 
+        <!-- Notifications & Buttons -->
+        <div class="flex flex-wrap justify-center space-x-6 mt-6 text-center">
+          <div class="bg-white p-6 rounded-lg shadow-xl max-w-xl w-full mb-6">
+              <h3 class="font-semibold mb-4">Notificaciones</h3>
+              {% if notifications|length == 0 %}
+                  <p>No tiene notificationes al momento.</p>
+              {% else %}
+                  <table class="min-w-full divide-y divide-gray-200">
+                      <tbody class="bg-white divide-y divide-gray-200">
+                          {% for notification in notifications %}
+                          <tr>
+                              <td>{{ notification.message }}</td>
+                              <td>
+                                  <span 
+                                  class="material-icons text-red-600 cursor-pointer hover:text-red-800" 
+                                  title="Borrar Notificacion" 
+                                  onclick="confirmDelete('{{ notification._id }}')"
+                              >
+                                  borrar
+                              </span>
+                              </td>
+                          </tr>
+                          {% endfor %}
+                      </tbody>
+                  </table>
+              {% endif %}
+          </div>
+      </div>
+
         <!-- Modify Profile Button -->
         <a href="/profile/edit" class="mt-8 bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400">Editar Perfil</a>
     </div>
@@ -216,6 +245,26 @@
                 calendar.addEventSource(events);
             });
     });
+    </script>
+
+    <!--Notification Delete-->
+    <script>
+      function confirmDelete(notificationId) {
+          const initialConfirm = confirm("¿Está seguro de que desea borrar esta notificacion?");
+          if (initialConfirm){
+              fetch(`/delete_notification/${notificationId}`, {
+                      method: 'POST'
+                  }).then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert(data.message);
+                            location.reload(); // Reload the page to reflect the changes
+                        } else {
+                            alert(data.message);
+                        }
+                    });
+          }
+      }
     </script>
 </body>
 </html>

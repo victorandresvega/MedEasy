@@ -142,12 +142,29 @@
     <div class="flex flex-wrap justify-center space-x-6 mt-6 text-center">
         <div class="bg-white p-6 rounded-lg shadow-xl max-w-xl w-full mb-6">
             <h3 class="font-semibold mb-4">Notificaciones</h3>
-            <p>Prontamente!</p>
+            {% if notifications|length == 0 %}
+                <p>No tiene notificationes al momento.</p>
+            {% else %}
+                <table class="min-w-full divide-y divide-gray-200">
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for notification in notifications %}
+                        <tr>
+                            <td class="px-6 py-4 align-middle">{{ notification.message }}</td>
+                            <td class="px-6 py-4 align-middle">
+                                <span 
+                                class="material-icons text-red-600 cursor-pointer hover:text-red-800" 
+                                title="Borrar Notificacion" 
+                                onclick="confirmDelete('{{ notification._id }}')"
+                            >
+                                borrar
+                            </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
         </div>
-        <!-- <div class="space-y-4">
-            <a href="/home" class="block w-full text-center bg-emerald-500 text-white rounded px-4 py-2 hover:bg-emerald-600">Encontrar Citas</a>
-            <a href="" class="block w-full text-center bg-gray-300 text-white rounded px-4 py-2">Citas Previas (Coming Soon)</a>
-        </div> -->
     </div>
 
     <!-- Modify Profile Button -->
@@ -183,6 +200,26 @@
                       }
                   });
             }
+        }
+    }
+</script>
+
+<!--Notification Delete-->
+<script>
+    function confirmDelete(notificationId) {
+        const initialConfirm = confirm("¿Está seguro de que desea borrar esta notificacion?");
+        if (initialConfirm){
+            fetch(`/delete_notification/${notificationId}`, {
+                    method: 'POST'
+                }).then(response => response.json())
+                  .then(data => {
+                      if (data.success) {
+                          alert(data.message);
+                          location.reload(); // Reload the page to reflect the changes
+                      } else {
+                          alert(data.message);
+                      }
+                  });
         }
     }
 </script>
