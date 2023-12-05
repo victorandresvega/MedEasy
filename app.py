@@ -643,6 +643,7 @@ def schedule_events(doc_id):
         if start_time > current_time:
             end_time = start_time + timedelta(minutes=30)
             event = {
+                "id": str(appt["_id"]),
                 "start": start_time.isoformat(),
                 "end": end_time.isoformat(),
                 "color": "red",  # marking it as unavailable
@@ -759,3 +760,16 @@ def cancel_appointment(appointment_id):
         return jsonify({"success": True, "message": "Cita cancelada exitosamente."})
     else:
         return jsonify({"success": False, "message": "No se pudo cancelar la cita."})
+    
+@app.route('/path_to_your_events/')
+def get_events():
+    # Fetch appointments from the database
+    appointments = mongo.db.appointments.find()
+    events = []
+
+    for appointment in appointments:
+        events.append({
+            'id': str(appointment['_id'])
+        })
+
+    return jsonify(events)

@@ -207,7 +207,24 @@
                 hour: '2-digit', 
                 minute: '2-digit', 
                 meridiem: 'short' 
-            }
+            },
+            events: '/path_to_your_events/', // URL to fetch the events (appointments)
+            eventClick: function(info) {
+              var appointmentId = info.event.id;  // Retrieve the appointment ID
+          
+              if (confirm('Are you sure you want to cancel this appointment?')) {
+                  fetch(`/cancel_appointment/${appointmentId}`, { method: 'POST' })
+                      .then(response => response.json())
+                      .then(data => {
+                          if (data.success) {
+                              info.event.remove(); // Remove the event from the calendar
+                              alert('Appointment cancelled successfully.');
+                          } else {
+                              alert('Error cancelling appointment.');
+                          }
+                      });
+              }
+          }
         });
 
         calendar.render();
