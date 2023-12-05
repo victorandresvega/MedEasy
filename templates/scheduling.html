@@ -326,7 +326,6 @@
                         // Formatting the event title to display start to end time
                         const startTime = new Date(event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                         const endTime = new Date(event.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                        event.title = `${startTime}-${endTime}`;
                     }
                 });
                 calendar.addEventSource(events);

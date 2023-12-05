@@ -188,11 +188,11 @@
         var calendarEl = document.getElementById('doctorAppointmentsCalendar');
         
         var calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'listDay',
+            initialView: 'timeGridWeek',
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
-                right: 'listDay,listWeek,listMonth'
+                right: 'timeGridDay timeGridWeek dayGridMonth'
             },
             buttonText: {
                 today: 'Hoy',
@@ -203,6 +203,13 @@
             navLinks: true,
             eventColor: 'red',
             locale: 'es',
+            selectMirror: true,
+            //dayMaxEvents: true,
+            eventColor: 'green',
+            allDaySlot: false,
+            slotMinTime: "{{ clock_in_time }}",
+            slotMaxTime: "{{clock_out_time }}",
+            hiddenDays: [0, 1, 2, 3, 4, 5, 6].filter(day => !{{ work_days|tojson }}.includes(day)),
             eventTimeFormat: { 
                 hour: '2-digit', 
                 minute: '2-digit', 
@@ -212,20 +219,60 @@
             eventClick: function(info) {
               var appointmentId = info.event.id;  // Retrieve the appointment ID
           
-              if (confirm('Are you sure you want to cancel this appointment?')) {
+              if (confirm('¿Seguro que quiere cancelar esta cita?')) {
                   fetch(`/cancel_appointment/${appointmentId}`, { method: 'POST' })
                       .then(response => response.json())
                       .then(data => {
                           if (data.success) {
                               info.event.remove(); // Remove the event from the calendar
-                              alert('Appointment cancelled successfully.');
+                              alert('Cita ha sido cancelada exitosamente.');
                           } else {
-                              alert('Error cancelling appointment.');
+                              alert('Error al cancelar la cita.');
                           }
                       });
               }
-          }
-        });
+          },
+          selectable: true,
+          select: function(selectionInfo) {
+              var start = selectionInfo.startStr;
+              var end = selectionInfo.endStr;
+            
+              if (confirm('¿Quiere cancelar este bloque de tiempo?')) {
+                const selectedDate = new Date(start)
+                const selectedEpoch = selectedDate.getTime() / 1000;
+                console.log(selectedEpoch)
+                fetch(`/block_time/${selectedEpoch}`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        selectedEpoch: selectedEpoch,
+                        doc_id: '{{ doc_id }}', // Replace with the doctor's ID
+                    }),
+                })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.success) {
+                        calendar.addEvent({
+                            start: new Date(selectionInfo.startStr),
+                            end: new Date(selectionInfo.endStr),
+                            color: "red", // Indicate blocked time
+                            rendering: 'background'
+                        });
+                        alert(data.message)
+                        calendar.refetchEvents();
+                        
+                    } else {
+                        alert(data.message);
+                    }
+                });
+
+        
+                selectedInfo = null;
+            }
+        }
+      });
 
         calendar.render();
 
@@ -237,12 +284,10 @@
                 events.forEach(event => {
                     event.editable = false; 
                     event.selectable = false;
-
                     const startTime = new Date(event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                     const endTime = new Date(event.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    event.title = `${startTime}-${endTime}`;
                 });
-                calendar.addEventSource(events);
+                calendar.addEventSource(events);  
             });
     });
     </script>

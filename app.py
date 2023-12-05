@@ -302,10 +302,10 @@ def profile():
             user.payload['schedule'] = {"work_days": [], "clock_in": "00:00", "clock_out": "00:00"}
 
         # Get clock_in and clock_out values directly from the payload
-        clock_in_time = convert_to_am_pm(user.payload['schedule'].get('clock_in', '00:00'))
-        clock_out_time = convert_to_am_pm(user.payload['schedule'].get('clock_out', '00:00'))
-
-        return render_template('doctor.html', doctor_email=user, doctor=user.payload, photo=photo_data, clock_in_time=clock_in_time, clock_out_time=clock_out_time, doc_id=user_id)
+        clock_in_time = convert_to_24h(user.payload['schedule'].get('clock_in', '00:00'))
+        clock_out_time = convert_to_24h(user.payload['schedule'].get('clock_out', '00:00'))
+        work_days = [Doctor.day_to_fullcalendar_format(day) for day in  user.payload['schedule'].get('work_days', [])]
+        return render_template('doctor.html', doctor_email=user, doctor=user.payload, photo=photo_data, clock_in_time=clock_in_time, clock_out_time=clock_out_time, doc_id=user_id, work_days = work_days)
 
 
 
@@ -773,3 +773,27 @@ def get_events():
         })
 
     return jsonify(events)
+
+@app.route('/block_time/<selectedEpoch>', methods=['POST'])
+def block_time(selectedEpoch):
+
+    data = request.json
+    selectedEpoch = data['selectedEpoch']
+    if '_id' in session:
+        doc_id = session["_id"]
+        # Create a blocked appointment entry
+        blocked_appointment = {
+            "doctor_id": ObjectId(doc_id),
+            "patient_id": ObjectId(doc_id),
+            "timestamp": selectedEpoch
+        }
+
+        result = mongo.db.appointments.insert_one(blocked_appointment)
+        print(result.inserted_id)
+        if result.inserted_id:
+            return jsonify({"success": True, "message": "Se ha bloqueado ese tiempo exitosamente"})
+        else:
+            return jsonify({"success": False, "message": "No se pudo bloquear ese tiempo."})
+    else:
+        return jsonify({"success": False, "message": "Doctor no fue identificado"}), 403
+
