@@ -99,7 +99,10 @@ class Doctor:
             if 'payload' in doctor and 'coordinates' in doctor['payload']:
                 coordinates.append({
                     'latitude': doctor['payload']['coordinates']['latitude'],
-                    'longitude': doctor['payload']['coordinates']['longitude']
+                    'longitude': doctor['payload']['coordinates']['longitude'],
+                    'firstName': doctor['payload']['first_name'],
+                    'lastName': doctor['payload']['last_name'],
+                    'address': doctor['payload']['address']
                 })
 
         return coordinates

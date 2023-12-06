@@ -173,13 +173,21 @@
 
             let doctorCoordinates = {{ coordinates | tojson | safe }};
 
-            doctorCoordinates.forEach(coordinates => {
-                let { latitude, longitude } = coordinates;
+            doctorCoordinates.forEach(doctor => {
+                let { latitude, longitude, firstName, lastName, address } = doctor;
                 let doctorLocation = { lat: latitude, lng: longitude };
 
-                new google.maps.Marker({
+                let marker = new google.maps.Marker({
                     position: doctorLocation,
                     map: map,
+                });
+
+                marker.addListener('click', function() {
+                    let infowindow = new google.maps.InfoWindow({
+                        content: `<div><strong> Dr. ${firstName} ${lastName}</strong></div>
+                        <div><strong>${address}</strong></div>`
+                    });
+                    infowindow.open(map, marker);
                 });
             });
         }
