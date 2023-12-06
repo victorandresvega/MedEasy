@@ -138,34 +138,44 @@
     </div>
 
 
-    <!-- Notifications & Buttons -->
-    <div class="flex flex-wrap justify-center space-x-6 mt-6 text-center">
-        <div class="bg-white p-6 rounded-lg shadow-xl max-w-xl w-full mb-6">
-            <h3 class="font-semibold mb-4">Notificaciones</h3>
-            {% if notifications|length == 0 %}
-                <p>No tiene notificationes al momento.</p>
-            {% else %}
-                <table class="min-w-full divide-y divide-gray-200">
-                    <tbody class="bg-white divide-y divide-gray-200">
+          <!-- Notifications & Buttons -->
+        <div class="flex flex-wrap justify-center space-x-6 mt-6 text-center">
+            <div class="bg-white p-6 rounded-lg shadow-xl max-w-xl w-full mb-6 overflow-x-auto">
+                <h3 class="font-semibold mb-4">Notificaciones</h3>
+                {% if notifications|length == 0 %}
+                <p>No tiene notificaciones en este momento.</p>
+                {% else %}
+                <div class="max-w-full overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-100">
+                        <tr>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Mensaje</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Contacto</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                        </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
                         {% for notification in notifications %}
                         <tr>
-                            <td class="px-6 py-4 align-middle">{{ notification.message }}</td>
-                            <td class="px-6 py-4 align-middle">
-                                <span 
-                                class="material-icons text-red-600 cursor-pointer hover:text-red-800" 
-                                title="Borrar Notificacion" 
-                                onclick="confirmDelete('{{ notification._id }}')"
-                            >
-                                borrar
-                            </span>
+                            <td class="px-6 py-4 whitespace-wrap">{{ notification.message }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ notification.sender_phone_number }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <button 
+                                    class="text-red-600 hover:text-red-800 focus:outline-none"
+                                    title="Borrar Notificacion" 
+                                    onclick="confirmDelete('{{ notification._id }}')"
+                                >
+                                    Borrar
+                                </button>
                             </td>
                         </tr>
                         {% endfor %}
-                    </tbody>
-                </table>
-            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
         </div>
-    </div>
 
     <!-- Modify Profile Button -->
     <a href="/profile/edit" class="mt-8 bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400">Editar Perfil</a>
