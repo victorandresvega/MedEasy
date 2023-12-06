@@ -90,7 +90,6 @@ def home():
         users = Doctor.get_filtered_doctors(mongo.db, specialty, name)
     doctor = mongo.db.users.find({"role": "doctor"})
     coordinates = Doctor.get_doctor_coordinates(doctor)
-    print(coordinates)
     logged_in = "_id" in session
     user_role = session.get('user_role', None)
     return render_template('home.html', users=users, specialties=specialties, logged_in=logged_in, user_role=user_role, coordinates=coordinates)
@@ -744,7 +743,6 @@ def check_existing_appointment():
             }
         })
     else:
-        print("llegue")
         return jsonify({"hasExistingAppointment": False})
 
 

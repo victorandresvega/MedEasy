@@ -1,9 +1,6 @@
-import locale
 from datetime import datetime
 from bson import ObjectId
 
-# Set the locale to Spanish
-# locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
 class Notification:
     def __init__(self, recipient_id, sender_id, sender_name, sender_phone_number, type, appointment_time, message):
         self.recipient_id = recipient_id
@@ -34,7 +31,7 @@ class Notification:
         sender_name = sender_data["payload"]["first_name"] + " " + sender_data["payload"]["last_name"]
         sender_phone_number = sender_data["payload"]["phone_number"]
         appt_time = datetime.fromtimestamp(appointment_time)
-        appt_time_string = appt_time.strftime("%d de %B de %Y %I:%M:%S %p")
+        appt_time_string = appt_time.strftime("%d/%m/%Y - %I:%M %p")
         #With all the data that is retrieved, now we create an appropriate message for the notification based 
         #on the type of notification received
         if type == 'Appointment Created':
