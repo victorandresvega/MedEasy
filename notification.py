@@ -3,7 +3,7 @@ from datetime import datetime
 from bson import ObjectId
 
 # Set the locale to Spanish
-locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
+# locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
 class Notification:
     def __init__(self, recipient_id, sender_id, sender_name, sender_phone_number, type, appointment_time, message):
         self.recipient_id = recipient_id
