@@ -322,17 +322,10 @@ def profile():
             user.payload['schedule'] = {"work_days": [], "clock_in": "00:00", "clock_out": "00:00"}
 
         # Get clock_in and clock_out values directly from the payload
-<<<<<<< HEAD
         clock_in_time = convert_to_24h(user.payload['schedule'].get('clock_in', '00:00'))
         clock_out_time = convert_to_24h(user.payload['schedule'].get('clock_out', '00:00'))
         work_days = [Doctor.day_to_fullcalendar_format(day) for day in  user.payload['schedule'].get('work_days', [])]
-        return render_template('doctor.html', doctor_email=user, doctor=user.payload, photo=photo_data, clock_in_time=clock_in_time, clock_out_time=clock_out_time, doc_id=user_id, work_days = work_days)
-=======
-        clock_in_time = convert_to_am_pm(user.payload['schedule'].get('clock_in', '00:00'))
-        clock_out_time = convert_to_am_pm(user.payload['schedule'].get('clock_out', '00:00'))
-
-        return render_template('doctor.html', doctor_email=user, doctor=user.payload, photo=photo_data, clock_in_time=clock_in_time, clock_out_time=clock_out_time, doc_id=user_id, notifications = user_notifications)
->>>>>>> Notifications
+        return render_template('doctor.html', doctor_email=user, doctor=user.payload, photo=photo_data, clock_in_time=clock_in_time, clock_out_time=clock_out_time, doc_id=user_id, work_days = work_days, notifications = user_notifications)
 
 
 
@@ -804,7 +797,6 @@ def cancel_appointment(appointment_id):
         return jsonify({"success": True, "message": "Cita cancelada exitosamente."})
     else:
         return jsonify({"success": False, "message": "No se pudo cancelar la cita."})
-<<<<<<< HEAD
     
 @app.route('/path_to_your_events/')
 def get_events():
@@ -842,7 +834,6 @@ def block_time(selectedEpoch):
     else:
         return jsonify({"success": False, "message": "Doctor no fue identificado"}), 403
 
-=======
 
 @app.route('/delete_notification/<notification_id>', methods=['POST'])
 def delete_notification(notification_id):
@@ -853,4 +844,3 @@ def delete_notification(notification_id):
         return jsonify({"success": True, "message": "Notificacion borrada."})
     else:
         return jsonify({"success": False, "message": "No se pudo borrar la notificacion."})
->>>>>>> Notifications
