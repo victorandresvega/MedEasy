@@ -37,14 +37,13 @@ class Notification:
         appt_time_string = appt_time.strftime("%d de %B de %Y %I:%M:%S %p")
         #With all the data that is retrieved, now we create an appropriate message for the notification based 
         #on the type of notification received
-        match type:
-            case 'Appointment Created':
+        if type == 'Appointment Created':
                 message = "Cita nueva creada por {0}.".format(sender_name)
-            case 'Appointment Deleted by Patient':
+        elif type == 'Appointment Deleted by Patient':
                 message = "Cita cancelada por {0}.".format( sender_name)
-            case 'Appointment Modified by Patient':
+        elif type == 'Appointment Modified by Patient':
                 message = "Cita modificada por {0}.".format(sender_name)
-            case 'Twenty four hours till appointment':
+        elif type == 'Twenty four hours till appointment':
                 message = "Recordatorio de su cita con {0}.".format(sender_name)
         notification = Notification(ObjectId(recipient_id), ObjectId(sender_id), sender_name, sender_phone_number, type, appt_time_string, message)
         notification_document = notification.to_json()
