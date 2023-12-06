@@ -36,7 +36,7 @@ class Notification:
         #on the type of notification received
         if type == 'Appointment Created':
                 message = "Cita nueva creada por {0}.".format(sender_name)
-        elif type == 'Appointment Deleted by Patient':
+        elif type == 'Appointment Deleted':
                 message = "Cita cancelada por {0}.".format( sender_name)
         elif type == 'Appointment Modified by Patient':
                 message = "Cita modificada por {0}.".format(sender_name)

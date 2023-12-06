@@ -783,6 +783,8 @@ def modify_appointment():
 
 @app.route('/cancel_appointment/<appointment_id>', methods=['POST'])
 def cancel_appointment(appointment_id):
+    user_id = session.get('_id', None)
+    user = User.get_user_by_id(user_id, mongo.db)
     #Retrieve appointment data before deletion for use in notification
     appointment_data = mongo.db.appointments.find_one({"_id": ObjectId(appointment_id)})
     
@@ -790,8 +792,10 @@ def cancel_appointment(appointment_id):
     
     if result.deleted_count > 0:
         #Send notification to the doctor that the appointment was successfully deleted
-        notification = Notification.createNotification(appointment_data["doctor_id"], appointment_data["patient_id"], "Appointment Deleted by Patient", appointment_data["timestamp"], mongo.db)
-
+        if(user.role == "patient"):
+            notification = Notification.createNotification(appointment_data["doctor_id"], appointment_data["patient_id"], "Appointment Deleted", appointment_data["timestamp"], mongo.db)
+        else:
+            notification = Notification.createNotification(appointment_data["patient_id"], appointment_data["doctor_id"], "Appointment Deleted", appointment_data["timestamp"], mongo.db)
         return jsonify({"success": True, "message": "Cita cancelada exitosamente."})
     else:
         return jsonify({"success": False, "message": "No se pudo cancelar la cita."})
